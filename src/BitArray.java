@@ -25,6 +25,7 @@
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 /**
  * A packed array of booleans.
@@ -38,7 +39,7 @@ public class BitArray {
     private byte[] repn;
     private int length;
 
-    private static final int BITS_PER_UNIT = 8;
+    public static final int BITS_PER_UNIT = 8;
 
     private static int subscript(int idx) {
         return idx / BITS_PER_UNIT;
@@ -55,9 +56,7 @@ public class BitArray {
         if (length < 0) {
             throw new IllegalArgumentException("Negative length for BitArray");
         }
-
         this.length = length;
-
         repn = new byte[(length + BITS_PER_UNIT - 1)/BITS_PER_UNIT];
     }
 
@@ -80,7 +79,6 @@ public class BitArray {
         }
 
         this.length = length;
-
         int repLength = ((length + BITS_PER_UNIT - 1)/BITS_PER_UNIT);
         int unusedBits = repLength*BITS_PER_UNIT - length;
         byte bitMask = (byte) (0xFF << unusedBits);
@@ -126,7 +124,6 @@ public class BitArray {
         if (index < 0 || index >= length) {
             throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
         }
-
         return (repn[subscript(index)] & position(index)) != 0;
     }
 
@@ -169,17 +166,14 @@ public class BitArray {
     }
 
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || !(obj instanceof BitArray)) return false;
-
-        BitArray ba = (BitArray) obj;
-
-        if (ba.length != length) return false;
-
-        for (int i = 0; i < repn.length; i += 1) {
-            if (repn[i] != ba.repn[i]) return false;
+        if (obj == this) {
+            return true;
         }
-        return true;
+        if (obj == null || !(obj instanceof BitArray)) {
+            return false;
+        }
+        BitArray ba = (BitArray) obj;
+        return (ba.length == length) && IntStream.range(0, repn.length).noneMatch(i -> repn[i] != ba.repn[i]);
     }
 
     /**
@@ -202,17 +196,17 @@ public class BitArray {
     public int hashCode() {
         int hashCode = 0;
 
-        for (int i = 0; i < repn.length; i++)
-            hashCode = 31*hashCode + repn[i];
-
+        for (byte b : repn) {
+            hashCode = 31 * hashCode + b;
+        }
         return hashCode ^ length;
     }
 
 
+    @Override
     public Object clone() {
         return new BitArray(this);
     }
-
 
     private static final byte[][] NYBBLE = {
             { (byte)'0',(byte)'0',(byte)'0',(byte)'0'},
@@ -244,21 +238,14 @@ public class BitArray {
         for (int i = 0; i < repn.length - 1; i++) {
             out.write(NYBBLE[(repn[i] >> 4) & 0x0F], 0, 4);
             out.write(NYBBLE[repn[i] & 0x0F], 0, 4);
-
-            if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
-                out.write('\n');
-            } else {
-                out.write(' ');
-            }
+            out.write(i % BYTES_PER_LINE == BYTES_PER_LINE - 1 ? '\n' : ' ');
         }
 
         // in last byte of repn, use only the valid bits
         for (int i = BITS_PER_UNIT * (repn.length - 1); i < length; i++) {
             out.write(get(i) ? '1' : '0');
         }
-
-        return new String(out.toByteArray());
-
+        return out.toString();
     }
 
     public BitArray truncate() {

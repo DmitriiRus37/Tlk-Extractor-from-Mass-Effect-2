@@ -1,106 +1,91 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.*;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class TlkFile  {
-
     TlkHeader header;
     public List<TlkStringRef> stringRefs;
     List<HuffmanNode> characterTree;
     BitArray bits;
+    ByteOrder byteOrder = ByteOrder.nativeOrder();
 
-    private enum FileFormat {
-        txt,
-        csv,
-        xml
-    }
-
-    public void ProgressChangedEventHandler(int percentProgress);
-    public Event progressChanged;
-
-    private void OnProgressChanged(int percentProgress)
-    {
-        ProgressChangedEventHandler handler = ProgressChanged;
-        if (handler != null)
-            handler(percentProgress);
-    }
-
-    /// <summary>
-    /// Loads a TLK file into memory.
-    /// </summary>
-    /// <param name="fileName"></param>
-    public void LoadTlkData(String fileName, boolean isPC) throws IOException {
-        /* **************** STEP ONE ****************
+    /** <summary>
+     *      Loads a TLK file into memory.
+     * </summary>
+     * <param name="fileName"></param>
+     */
+    public void loadTlkData(String fileName, boolean isPC) throws IOException {
+        /** **************** STEP ONE ****************
          *          -- load TLK file header --
-         *
-         * reading first 28 (4 * 7) bytes
+         *        reading first 28 (4 * 7) bytes
          */
 
-        /* using LittleEndian for PC architecture and BigEndian for Xbox360 */
-        MiscUtil.Conversion.EndianBitConverter bitConverter;
-        if (isPC)
-            bitConverter = new MiscUtil.Conversion.LittleEndianBitConverter();
-        else
-            bitConverter = new MiscUtil.Conversion.BigEndianBitConverter();
-        FileInputStream r = new MiscUtil.IO.EndianBinaryReader(bitConverter, File.OpenRead(fileName));
+        /** using LittleEndian for PC architecture and BigEndian for Xbox360 */
+        PositionInputStream r = baseStreamSeek( 0, fileName);
 
         header = new TlkHeader(r);
-        /* read possibly correct ME2 TLK file, but from another platfrom */
-        if (header.magic == 1416391424)
+        /** read possibly correct ME2 TLK file, but from another platfrom */
+        if (header.magic == 1416391424) {
             throw new RuntimeException();
-        /* read definately NOT a ME2 TLK ile */
-        if (header.magic != 7040084)
+        }
+        /** read definitely NOT a ME2 TLK ile */
+        if (header.magic != 7040084) {
             throw new RuntimeException();
-
+        }
         //DebugTools.PrintHeader(Header);
 
-        /* **************** STEP TWO ****************
+        /** **************** STEP TWO ****************
          *  -- read and store Huffman Tree nodes --
          */
-        /* jumping to the beginning of Huffmann Tree stored in TLK file */
-        long pos = r.BaseStream.Position;
-        r.BaseStream.Seek(pos + (header.entry1Count + header.entry2Count) * 8, SeekOrigin.Begin);
+        /** jumping to the beginning of Huffmann Tree stored in TLK file */
+        long pos = r.getPosition();
+//        r.BaseStream.Seek(pos + (Header.entry1Count + Header.entry2Count) * 8, SeekOrigin.Begin);
+        r = baseStreamSeek( pos + (header.entry1Count + header.entry2Count)*8L, fileName);
 
         characterTree = new LinkedList<>();
-        for (int i = 0; i < header.treeNodeCount; i++)
+        for (int i = 0; i < header.treeNodeCount; i++) {
             characterTree.add(new HuffmanNode(r));
+        }
 
-        /* **************** STEP THREE ****************
+        /** **************** STEP THREE ****************
          *  -- read all of coded data into memory --
          */
         byte[] data = new byte[header.dataLen];
-        r.BaseStream.Read(data, 0, data.length);
-        /* and store it as raw bits for further processing */
-        bits = new BitArray(data.length * BitArray.BITS_PER_UNIT, data);
+        r.read(data,0, data.length);
+        /** and store it as raw bits for further processing */
+        bits = new BitArray(data);
+        /** rewind BinaryReader just after the Header
+         * at the beginning of TLK Entries data
+         * */
+        r = baseStreamSeek(pos, fileName);
 
-        /* rewind BinaryReader just after the Header
-         * at the beginning of TLK Entries data */
-        r.BaseStream.Seek(pos, SeekOrigin.Begin);
-
-        /* **************** STEP FOUR ****************
+        /** **************** STEP FOUR ****************
          * -- decode (basing on Huffman Tree) raw bits data into actual strings --
          * and store them in a Dictionary<int, string> where:
          *   int: bit offset of the beginning of data (offset starting at 0 and counted for Bits array)
          *        so offset == 0 means the first bit in Bits array
-         *   string: actual decoded String */
+         *   string: actual decoded String
+         */
         Map<Integer, String> rawStrings = new HashMap<>();
-        int offset = 0;
-        while (offset < bits.length())
-        {
-            int key = offset;
-            /* read the String and update 'offset' variable to store NEXT String offset */
-            String s = GetString(offset);
+        Integer offset = 0;
+        Wrap offsetWrap = new Wrap();
+        offsetWrap.setI(offset);
+        while (offset < bits.length()) {
+            int key = offsetWrap.getI();
+            /** read the String and update 'offset' variable to store NEXT String offset */
+            String s = GetString(offsetWrap);
             rawStrings.put(key, s);
         }
 
-        /* **************** STEP FIVE ****************
+        /** **************** STEP FIVE ****************
          *         -- bind data to String IDs --
          * go through Entries in TLK file and read it's String ID and offset
          * then check if offset is a key in rawStrings and if it is, then bind data.
@@ -111,28 +96,27 @@ public class TlkFile  {
         for (int i = 0; i < header.entry1Count + header.entry2Count; i++) {
             TlkStringRef sref = new TlkStringRef(r);
             sref.position = i;
-            if (sref.BitOffset >= 0)
-            {
-                if (!rawStrings.containsKey(sref.BitOffset))
-                {
-                    int tmpOffset = sref.BitOffset;
-                    String partString = GetString(tmpOffset);
+            if (sref.bitOffset >= 0) {
+                if (!rawStrings.containsKey(sref.bitOffset)) {
+                    int tmpOffset = sref.bitOffset;
+                    Wrap tmpOffsetWrap = new Wrap();
+                    offsetWrap.setI(tmpOffset);
+                    String partString = GetString(tmpOffsetWrap);
 
-                    /* actually, it should store the fullString and subStringOffset,
+                    /** actually, it should store the fullString and subStringOffset,
                      * but as we don't have to use this compression feature,
-                     * we will store only the part of String we need */
+                     * we will store only the part of String we need
+                     * */
 
-                    /* int key = rawStrings.Keys.Last(c => c < sref.BitOffset);
+                    /** int key = rawStrings.Keys.Last(c => c < sref.BitOffset);
                      * String fullString = rawStrings[key];
                      * int subStringOffset = fullString.LastIndexOf(partString);
                      * sref.StartOfString = subStringOffset;
                      * sref.Data = fullString;
                      */
                     sref.Data = partString;
-                }
-                else
-                {
-                    sref.Data = rawStrings.get(sref.BitOffset);
+                } else {
+                    sref.Data = rawStrings.get(sref.bitOffset);
                 }
             }
             stringRefs.add(sref);
@@ -146,10 +130,10 @@ public class TlkFile  {
      *  <param name="fileName"></param>
      *  <param name="ff"></param>
      */
-    public void DumpToFile(String fileName, FileFormat ff)
-    {
-        File.Delete(fileName);
-        /* for now, it's better not to sort, to preserve original order */
+    public void dumpToFile(String fileName, FileFormat ff) throws XMLStreamException, IOException {
+
+        Files.deleteIfExists(Paths.get(fileName));
+        /** for now, it's better not to sort, to preserve original order */
         // StringRefs.Sort(CompareTlkStringRef);
 
         if (ff.equals(FileFormat.xml)) {
@@ -173,100 +157,91 @@ public class TlkFile  {
      *      List(of HuffmanNodes) CharacterTree
      *      BitArray Bits
      *  </remarks>
-     **/
-    private String GetString(Integer bitOffset)
+     */
+    private String GetString(Wrap bitOffsetWrap)
     {
         HuffmanNode root = characterTree.get(0);
         HuffmanNode curNode = root;
-
         String curString = "";
-        int i;
-        for (i = bitOffset; i < bits.length(); i++)
-        {
-            /* reading bits' sequence and decoding it to Strings while traversing Huffman Tree */
-            int nextNodeID;
-            if (bits.get(i)) {
-                nextNodeID = curNode.RightNodeID;
-            } else {
-                nextNodeID = curNode.LeftNodeID;
-            }
+        Integer i;
+        for (i = bitOffsetWrap.getI(); i < bits.length(); i++) {
+            /** reading bits' sequence and decoding it to Strings while traversing Huffman Tree */
+            int nextNodeID = bits.getRev(i) ? curNode.rightNodeId : curNode.leftNodeId;
 
             if (nextNodeID >= 0) {
-                /* it's an internal node - keep looking for a leaf */
+                /** it's an internal node - keep looking for a leaf */
                 curNode = characterTree.get(nextNodeID);
             } else {
-                /* it's a leaf! */
-                char c = BitConverter.ToChar(BitConverter.GetBytes(0xffff - nextNodeID), 0);
+                /** it's a leaf! */
+                char c = 0;
+                try {
+                    c = BitConverter.toChar(BitConverter.GetBytes(0xffff - nextNodeID), 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 if (c != '\0') {
-                    /* it's not NULL */
+                    /** it's not NULL */
                     curString += c;
                     curNode = root;
                 } else {
-                    /* it's a NULL terminating processed string, we're done */
-                    bitOffset = i + 1;
+                    /** it's a NULL terminating processed string, we're done */
+                    i = i+1;
+                    bitOffsetWrap.setI(i);
                     return curString;
                 }
             }
         }
-        bitOffset = i + 1;
+        i = i+1;
+        bitOffsetWrap.setI(i);
         return null;
     }
 
-   /** <summary>
-    *       Writing data in an XML format.
-    *  </summary>
-    * <param name="fileName"></param>
-    * private void SaveToXmlFile(String fileName)
-    */
-    {
+    /** <summary>
+     *       Writing data in an XML format.
+     *  </summary>
+     * <param name="fileName"></param>
+     * */
+    private void SaveToXmlFile(String fileName) throws XMLStreamException, FileNotFoundException {
         int totalCount = stringRefs.size();
         int count = 0;
         int lastProgress = -1;
-        XmlTextWriter xr = new XmlTextWriter(fileName, Encoding.UTF8);
-        xr.Formatting = Formatting.Indented;
-        xr.Indentation = 4;
 
-        xr.WriteStartDocument();
-        xr.WriteStartElement("tlkFile");
-        xr.WriteAttributeString("TLKToolVersion", App.GetVersion());
-
-        xr.WriteComment("Male entries section begin (ends at position " + (Header.entry1Count - 1) + ")");
+        XMLOutputFactory output = XMLOutputFactory.newInstance();
+        XMLStreamWriter xr = output.createXMLStreamWriter(new FileOutputStream(fileName));
+        xr.writeStartDocument("utf-8", "1.0");
+        xr.writeStartElement("tlkFile");
+        xr.writeAttribute("TLKToolVersion", "how to get version???");
+        xr.writeComment("Male entries section begin (ends at position " + (header.entry1Count - 1) + ")");
 
         for (TlkStringRef s : stringRefs) {
-            if (s.position == Header.entry1Count)
-            {
-                xr.WriteComment("Male entries section end");
-                xr.WriteComment("Female entries section begin (ends at position " + (Header.entry1Count + Header.entry2Count - 1) + ")");
+            if (s.position == header.entry1Count) {
+                xr.writeComment("Male entries section end");
+                xr.writeComment("Female entries section begin (ends at position " + (header.entry1Count + header.entry2Count - 1) + ")");
             }
+            xr.writeStartElement("string");
 
-            xr.WriteStartElement("string");
+            xr.writeStartElement("id");
+            xr.writeCharacters(String.valueOf(s.stringId));
+            xr.writeEndElement(); // </id>
 
-            xr.WriteStartElement("id");
-            xr.WriteValue(s.StringID);
-            xr.WriteEndElement(); // </id>
+            xr.writeStartElement("position");
+            xr.writeCharacters(String.valueOf(s.position));
+            xr.writeEndElement(); // </position>
 
-            xr.WriteStartElement("position");
-            xr.WriteValue(s.position);
-            xr.WriteEndElement(); // </position>
-
-            if (s.BitOffset < 0)
-                xr.WriteElementString("data", "-1");
-            else
-                xr.WriteElementString("data", s.Data);
-
-            xr.WriteEndElement(); // </string>
+            xr.writeStartElement("data");// </data>
+            xr.writeCharacters(s.bitOffset < 0 ? "-1" : s.Data);
+            xr.writeEndElement(); // </data>
+            xr.writeEndElement(); // </string>
 
             int progress = (++count * 100) / totalCount;
-            if (progress > lastProgress)
-            {
+            if (progress > lastProgress) {
                 lastProgress = progress;
-                OnProgressChanged(lastProgress);
             }
         }
-        xr.WriteComment("Female entries section end");
-        xr.WriteEndElement(); // </tlkFile>
-        xr.Flush();
-        xr.Close();
+        xr.writeComment("Female entries section end");
+        xr.writeEndElement(); // </tlkFile>
+        xr.flush();
+        xr.close();
     }
 
     /** <summary>
@@ -295,15 +270,32 @@ public class TlkFile  {
             int progress = (++count * 100) / totalCount;
             if (progress > lastProgress) {
                 lastProgress = progress;
-                OnProgressChanged(lastProgress);
             }
         }
     }
 
-//        /* for sorting */
+    public static int readInt32(InputStream in) throws IOException {
+        int ch1 = in.read();
+        int ch2 = in.read();
+        int ch3 = in.read();
+        int ch4 = in.read();
+        if ((ch1 | ch2 | ch3 | ch4) < 0) {
+            throw new EOFException();
+        }
+        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1));
+    }
+
+    public static PositionInputStream baseStreamSeek(long pos, String fileName) throws IOException {
+        InputStream x = new FileInputStream(fileName);
+        PositionInputStream r = new PositionInputStream(x);
+        r.skipNBytes(pos);
+        return r;
+    }
+
+//        /** for sorting */
 //        private static int CompareTlkStringRef(TlkHeader.TlkStringRef strRef1, TlkHeader.TlkStringRef strRef2) {
 //            int result = strRef1.stringId.compareTo(strRef2.stringId);
 //            return result;
 //        }
 }
-}
+

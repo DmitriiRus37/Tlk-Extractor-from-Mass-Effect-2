@@ -1,15 +1,15 @@
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class TlkStringRef {
     public int stringId;
-    public int BitOffset;
+    public int bitOffset;
 
     public String Data;
     public int position;
 
-    public TlkStringRef(FileInputStream r) throws IOException {
-        this.stringId = r.read();
-        this.BitOffset = r.read();
+    public TlkStringRef(InputStream r) throws IOException {
+        this.stringId = TlkFile.readInt32(r);
+        this.bitOffset = TlkFile.readInt32(r);
     }
 }

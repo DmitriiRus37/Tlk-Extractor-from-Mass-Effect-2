@@ -36,16 +36,20 @@ import java.util.stream.IntStream;
 
 public class BitArray {
 
-    private byte[] repn;
-    private int length;
+    private final byte[] repn;
+    private final long length;
 
-    public static final int BITS_PER_UNIT = 8;
+    public static final byte BITS_PER_UNIT = 8;
 
     private static int subscript(int idx) {
         return idx / BITS_PER_UNIT;
     }
 
-    private static int position(int idx) { // bits big-endian in each unit
+    private static int positionBigEndian(int idx) { // bits big-endian in each unit
+        return 1 << (BITS_PER_UNIT - 1 - (idx % BITS_PER_UNIT));
+    }
+
+    private static int positionLittleEndian(int idx) { // bits little-endian in each unit
         return 1 << (BITS_PER_UNIT - 1 - (idx % BITS_PER_UNIT));
     }
 
@@ -68,19 +72,10 @@ public class BitArray {
      * to specify a value for every bit in the BitArray.  In other words,
      * 8*a.length <= length.
      */
-    public BitArray(int length, byte[] a) throws IllegalArgumentException {
-
-        if (length < 0) {
-            throw new IllegalArgumentException("Negative length for BitArray");
-        }
-        if (a.length * BITS_PER_UNIT < length) {
-            throw new IllegalArgumentException("Byte array too short to represent " +
-                    "bit array of given length");
-        }
-
-        this.length = length;
-        int repLength = ((length + BITS_PER_UNIT - 1)/BITS_PER_UNIT);
-        int unusedBits = repLength*BITS_PER_UNIT - length;
+    public BitArray(byte[] a) throws IllegalArgumentException {
+        length = (long) a.length * BITS_PER_UNIT;
+        int repLength = (int) ((length + BITS_PER_UNIT - 1)/BITS_PER_UNIT);
+        long unusedBits = (long) repLength *BITS_PER_UNIT - length;
         byte bitMask = (byte) (0xFF << unusedBits);
 
         /*
@@ -101,7 +96,7 @@ public class BitArray {
      */
     public BitArray(boolean[] bits) {
         length = bits.length;
-        repn = new byte[(length + 7)/8];
+        repn = new byte[Math.toIntExact((length + 7) / 8)];
 
         for (int i=0; i < length; i++) {
             set(i, bits[i]);
@@ -124,7 +119,21 @@ public class BitArray {
         if (index < 0 || index >= length) {
             throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
         }
-        return (repn[subscript(index)] & position(index)) != 0;
+        return (repn[subscript(index)] & positionBigEndian(index)) != 0;
+    }
+
+    /**
+     *  Returns the reversed indexed bit in this BitArray.
+     */
+    public boolean getRev(int index) throws ArrayIndexOutOfBoundsException {
+        if (index < 0 || index >= length) {
+            throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
+        }
+        boolean[] result = new boolean[Byte.SIZE];
+        for (int i = 0; i<Byte.SIZE; i++) {
+            result[i] = (repn[subscript(index)] >> i & 0x1) != 0x0;
+        }
+        return result[index % BITS_PER_UNIT];
     }
 
     /**
@@ -136,19 +145,14 @@ public class BitArray {
             throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
         }
         int idx = subscript(index);
-        int bit = position(index);
-
-        if (value) {
-            repn[idx] |= bit;
-        } else {
-            repn[idx] &= ~bit;
-        }
+        int bit = positionBigEndian(index);
+        repn[idx] = value ? (byte) (repn[idx] | bit) : (byte) (repn[idx] & ~bit);
     }
 
     /**
      * Returns the length of this BitArray.
      */
-    public int length() {
+    public long length() {
         return length;
     }
 
@@ -177,10 +181,10 @@ public class BitArray {
     }
 
     /**
-     * Return a boolean array with the same bit values a this BitArray.
+     * Return a boolean array with the same bit values as this BitArray.
      */
     public boolean[] toBooleanArray() {
-        boolean[] bits = new boolean[length];
+        boolean[] bits = new boolean[Math.toIntExact(length)];
 
         for (int i=0; i < length; i++) {
             bits[i] = get(i);
@@ -199,7 +203,7 @@ public class BitArray {
         for (byte b : repn) {
             hashCode = 31 * hashCode + b;
         }
-        return hashCode ^ length;
+        return Math.toIntExact(hashCode ^ length);
     }
 
 
@@ -249,9 +253,9 @@ public class BitArray {
     }
 
     public BitArray truncate() {
-        for (int i=length-1; i>=0; i--) {
+        for (int i = Math.toIntExact(length - 1); i>=0; i--) {
             if (get(i)) {
-                return new BitArray(i+1, Arrays.copyOf(repn, (i + BITS_PER_UNIT)/BITS_PER_UNIT));
+                return new BitArray( Arrays.copyOf(repn, (i + BITS_PER_UNIT)/BITS_PER_UNIT));
             }
         }
         return new BitArray(1);

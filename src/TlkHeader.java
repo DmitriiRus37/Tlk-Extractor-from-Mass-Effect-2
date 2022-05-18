@@ -1,5 +1,5 @@
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class TlkHeader {
     public int magic;
@@ -10,13 +10,14 @@ public class TlkHeader {
     public int treeNodeCount;
     public int dataLen;
 
-    public TlkHeader(FileInputStream r) throws IOException {
-        this.magic = r.read();
-        this.ver = r.read();
-        this.min_ver = r.read();
-        this.entry1Count = r.read();
-        this.entry2Count = r.read();
-        this.treeNodeCount = r.read();
-        this.dataLen = r.read();
+    public TlkHeader(InputStream r) throws IOException {
+        this.magic = TlkFile.readInt32(r);
+        this.ver = TlkFile.readInt32(r);
+        this.min_ver = TlkFile.readInt32(r);
+        this.entry1Count = TlkFile.readInt32(r);
+        this.entry2Count = TlkFile.readInt32(r);
+        this.treeNodeCount = TlkFile.readInt32(r);
+        this.dataLen = TlkFile.readInt32(r);
     }
+
 }

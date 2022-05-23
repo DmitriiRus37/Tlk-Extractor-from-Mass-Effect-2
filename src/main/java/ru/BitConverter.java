@@ -13,9 +13,7 @@ import java.nio.ByteOrder;
 public class BitConverter {
 
     public static byte[] getBytes(boolean x) {
-        return new byte[]{
-                (byte) (x ? 1:0)
-        };
+        return new byte[]{(byte) (x ? 1:0)};
     }
 
     public static byte[] getBytes(char c) {
@@ -25,8 +23,7 @@ public class BitConverter {
     }
 
     public static byte[] getBytes(double x) {
-        return getBytes(
-                Double.doubleToRawLongBits(x));
+        return getBytes(Double.doubleToRawLongBits(x));
     }
 
     public static byte[] getBytes(short x) {
@@ -59,8 +56,7 @@ public class BitConverter {
     }
 
     public static byte[] getBytes(float x) {
-        return getBytes(
-                Float.floatToRawIntBits(x));
+        return getBytes(Float.floatToRawIntBits(x));
     }
 
     public static byte[] getBytes(String x) {
@@ -82,30 +78,43 @@ public class BitConverter {
     }
 
     public static char toChar(byte[] bytes, int index) throws Exception {
-        if (bytes.length != 2)
+        if (bytes.length < 2) {
             throw new Exception("The length of the byte array must be at least 2 bytes long.");
-        return (char)(
-                (0xff & bytes[index]) << 8   |
-                        (0xff & bytes[index + 1])
-        );
+        }
+        return (char) (((0xff & bytes[index]) << 8) | (0xff & bytes[index + 1]));
+    }
+
+    public static char toCharRev(byte[] bytes, int index) throws Exception {
+        if (bytes.length < 2) {
+            throw new Exception("The length of the byte array must be at least 2 bytes long.");
+        }
+        char[] buffer = new char[bytes.length >> 1];
+        for (int i=0; i< bytes.length/2; i++) {
+            byte temp = bytes[i];
+            bytes[i] = bytes[bytes.length-1-i];
+            bytes[bytes.length-1-i] = temp;
+        }
+        for (int i = 0; i < buffer.length; i++) {
+            int bpos = i << 1;
+            char c = (char)(((bytes[bpos]&0x00FF)<<8) + (bytes[bpos+1]&0x00FF));
+            buffer[i] = c;
+        }
+        int countOfChars = buffer.length;
+        return buffer[countOfChars-1-index];
     }
 
     public static double toDouble(byte[] bytes, int index) throws Exception {
         if (bytes.length != 8) {
             throw new Exception("The length of the byte array must be at least 8 bytes long.");
         }
-        return Double.longBitsToDouble(
-                toInt64(bytes, index));
+        return Double.longBitsToDouble(toInt64(bytes, index));
     }
 
     public static short toInt16(byte[] bytes, int index) throws Exception {
         if (bytes.length != 8) {
             throw new Exception("The length of the byte array must be at least 8 bytes long.");
         }
-        return (short)(
-                (0xff & bytes[index]) << 8   |
-                        (0xff & bytes[index + 1])
-        );
+        return (short) (((0xff & bytes[index]) << 8) | (0xff & bytes[index + 1]));
     }
 
     public static int toInt32(byte[] bytes, int index) throws Exception {
@@ -136,12 +145,10 @@ public class BitConverter {
         if (bytes.length != 4) {
             throw new Exception("The length of the byte array must be at least 4 bytes long.");
         }
-        return Float.intBitsToFloat(
-                toInt32(bytes, index));
+        return Float.intBitsToFloat(toInt32(bytes, index));
     }
 
-    public static byte[] GetBytes(int value)
-    {
+    public static byte[] GetBytes(int value) {
         ByteBuffer buffer = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
         buffer.putInt(value);
         return buffer.array();

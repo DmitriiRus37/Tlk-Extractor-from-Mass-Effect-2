@@ -114,7 +114,7 @@ public class BitArray {
      */
     public boolean get(int index) throws ArrayIndexOutOfBoundsException {
         if (index < 0 || index >= length) {
-            throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
+            throw new ArrayIndexOutOfBoundsException(String.valueOf(index));
         }
         return (repn[subscript(index)] & positionBigEndian(index)) != 0;
     }
@@ -124,7 +124,7 @@ public class BitArray {
      */
     public boolean getRev(int index) throws ArrayIndexOutOfBoundsException {
         if (index < 0 || index >= length) {
-            throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
+            throw new ArrayIndexOutOfBoundsException(String.valueOf(index));
         }
         boolean[] bitArray = new boolean[Byte.SIZE];
         for (int i = 0; i<Byte.SIZE; i++) {
@@ -145,7 +145,7 @@ public class BitArray {
     public void set(int index, boolean value)
             throws ArrayIndexOutOfBoundsException {
         if (index < 0 || index >= length) {
-            throw new ArrayIndexOutOfBoundsException(Integer.toString(index));
+            throw new ArrayIndexOutOfBoundsException(String.valueOf(index));
         }
         int idx = subscript(index);
         int bit = positionBigEndian(index);

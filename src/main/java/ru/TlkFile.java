@@ -49,7 +49,6 @@ public class TlkFile  {
          */
         /** jumping to the beginning of Huffmann Tree stored in TLK file */
         long pos = r.getPosition();
-//        r.BaseStream.Seek(pos + (Header.entry1Count + Header.entry2Count) * 8, SeekOrigin.Begin);
         r = baseStreamSeek( pos + (header.entry1Count + header.entry2Count)*8L, fileName);
 
         characterTree = new LinkedList<>();
@@ -77,9 +76,8 @@ public class TlkFile  {
          *   string: actual decoded String
          */
         Map<Integer, String> rawStrings = new HashMap<>();
-        Integer offset = 0;
-        Wrap offsetWrap = new Wrap();
-        offsetWrap.setValue(offset);
+        int offset = 0;
+        Wrap offsetWrap = new Wrap(offset);
         while (offset < bits.length()) {
             int key = offsetWrap.getValue();
             /** read the String and update 'offset' variable to store NEXT String offset */
@@ -100,10 +98,7 @@ public class TlkFile  {
             sref.position = i;
             if (sref.bitOffset >= 0) {
                 if (!rawStrings.containsKey(sref.bitOffset)) {
-                    int tmpOffset = sref.bitOffset;
-                    Wrap tmpOffsetWrap = new Wrap();
-                    offsetWrap.setValue(tmpOffset);
-                    String partString = GetString(tmpOffsetWrap);
+                    Wrap tmpOffsetWrap = new Wrap(sref.bitOffset);
 
                     /** actually, it should store the fullString and subStringOffset,
                      * but as we don't have to use this compression feature,
@@ -116,7 +111,7 @@ public class TlkFile  {
                      * sref.StartOfString = subStringOffset;
                      * sref.Data = fullString;
                      */
-                    sref.Data = partString;
+                    sref.Data = GetString(tmpOffsetWrap);
                 } else {
                     sref.Data = rawStrings.get(sref.bitOffset);
                 }
@@ -160,12 +155,11 @@ public class TlkFile  {
      *      main.java.ru.BitArray Bits
      *  </remarks>
      */
-    private String GetString(Wrap bitOffsetWrap)
-    {
+    private String GetString(Wrap bitOffsetWrap) {
         HuffmanNode root = characterTree.get(0);
         HuffmanNode curNode = root;
         String curString = "";
-        Integer i;
+        int i;
         for (i = bitOffsetWrap.getValue(); i < bits.length(); i++) {
             /** reading bits' sequence and decoding it to Strings while traversing Huffman Tree */
             int nextNodeID = bits.getRev(i) ? curNode.rightNodeId : curNode.leftNodeId;
@@ -177,7 +171,7 @@ public class TlkFile  {
                 /** it's a leaf! */
                 char c = 0;
                 try {
-                    c = BitConverter.toChar(BitConverter.GetBytes(0xffff - nextNodeID), 0);
+                    c = BitConverter.toCharRev(BitConverter.GetBytes(0xffff - nextNodeID), 0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -187,13 +181,13 @@ public class TlkFile  {
                     curNode = root;
                 } else {
                     /** it's a NULL terminating processed string, we're done */
-                    i = i+1;
+                    i++;
                     bitOffsetWrap.setValue(i);
                     return curString;
                 }
             }
         }
-        i = i+1;
+        i++;
         bitOffsetWrap.setValue(i);
         return null;
     }
@@ -288,8 +282,7 @@ public class TlkFile  {
     }
 
     public static PositionInputStream baseStreamSeek(long pos, String fileName) throws IOException {
-        InputStream x = new FileInputStream(fileName);
-        PositionInputStream r = new PositionInputStream(x);
+        PositionInputStream r = new PositionInputStream(new FileInputStream(fileName));
         r.skipNBytes(pos);
         return r;
     }

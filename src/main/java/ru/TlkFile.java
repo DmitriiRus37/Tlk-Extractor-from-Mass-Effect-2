@@ -1,3 +1,5 @@
+package ru;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -77,9 +79,9 @@ public class TlkFile  {
         Map<Integer, String> rawStrings = new HashMap<>();
         Integer offset = 0;
         Wrap offsetWrap = new Wrap();
-        offsetWrap.setI(offset);
+        offsetWrap.setValue(offset);
         while (offset < bits.length()) {
-            int key = offsetWrap.getI();
+            int key = offsetWrap.getValue();
             /** read the String and update 'offset' variable to store NEXT String offset */
             String s = GetString(offsetWrap);
             rawStrings.put(key, s);
@@ -100,7 +102,7 @@ public class TlkFile  {
                 if (!rawStrings.containsKey(sref.bitOffset)) {
                     int tmpOffset = sref.bitOffset;
                     Wrap tmpOffsetWrap = new Wrap();
-                    offsetWrap.setI(tmpOffset);
+                    offsetWrap.setValue(tmpOffset);
                     String partString = GetString(tmpOffsetWrap);
 
                     /** actually, it should store the fullString and subStringOffset,
@@ -155,7 +157,7 @@ public class TlkFile  {
      *  <remarks>
      *      Global variables used:
      *      List(of HuffmanNodes) CharacterTree
-     *      BitArray Bits
+     *      main.java.ru.BitArray Bits
      *  </remarks>
      */
     private String GetString(Wrap bitOffsetWrap)
@@ -164,7 +166,7 @@ public class TlkFile  {
         HuffmanNode curNode = root;
         String curString = "";
         Integer i;
-        for (i = bitOffsetWrap.getI(); i < bits.length(); i++) {
+        for (i = bitOffsetWrap.getValue(); i < bits.length(); i++) {
             /** reading bits' sequence and decoding it to Strings while traversing Huffman Tree */
             int nextNodeID = bits.getRev(i) ? curNode.rightNodeId : curNode.leftNodeId;
 
@@ -186,13 +188,13 @@ public class TlkFile  {
                 } else {
                     /** it's a NULL terminating processed string, we're done */
                     i = i+1;
-                    bitOffsetWrap.setI(i);
+                    bitOffsetWrap.setValue(i);
                     return curString;
                 }
             }
         }
         i = i+1;
-        bitOffsetWrap.setI(i);
+        bitOffsetWrap.setValue(i);
         return null;
     }
 
@@ -293,7 +295,7 @@ public class TlkFile  {
     }
 
 //        /** for sorting */
-//        private static int CompareTlkStringRef(TlkHeader.TlkStringRef strRef1, TlkHeader.TlkStringRef strRef2) {
+//        private static int CompareTlkStringRef(ru.TlkHeader.ru.TlkStringRef strRef1, ru.TlkHeader.ru.TlkStringRef strRef2) {
 //            int result = strRef1.stringId.compareTo(strRef2.stringId);
 //            return result;
 //        }

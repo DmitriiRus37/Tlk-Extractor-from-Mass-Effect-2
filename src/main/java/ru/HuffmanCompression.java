@@ -1,3 +1,5 @@
+package ru;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -394,7 +396,7 @@ class HuffmanCompression {
                 node.id = -1 - node.data;
 
                 /* that's how it's going to be decoded when parsing TLK file:
-                 * char c = BitConverter.ToChar(BitConverter.GetBytes(0xffff - node.ID), 0); */
+                 * char c = ru.BitConverter.ToChar(ru.BitConverter.GetBytes(0xffff - node.ID), 0); */
             } else {
                 node.id = index++;
                 indices.put(node.id, node);
@@ -415,7 +417,7 @@ class HuffmanCompression {
     }
 
     /** <summary>
-     *       Converts bits in a BitArray to an array with bytes.
+     *       Converts bits in a main.java.ru.BitArray to an array with bytes.
      *       Such array is ready to be written to a file.
      *   </summary>
      *   <param name="bitsList"></param>

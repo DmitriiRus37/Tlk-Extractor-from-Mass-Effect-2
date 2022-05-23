@@ -78,7 +78,7 @@ public class TlkFile  {
         Map<Integer, String> rawStrings = new HashMap<>();
         int offset = 0;
         Wrap offsetWrap = new Wrap(offset);
-        while (offset < bits.length()) {
+        while (offsetWrap.getValue() < bits.length()) {
             int key = offsetWrap.getValue();
             /** read the String and update 'offset' variable to store NEXT String offset */
             String s = GetString(offsetWrap);
@@ -97,24 +97,19 @@ public class TlkFile  {
             TlkStringRef sref = new TlkStringRef(r);
             sref.position = i;
             if (sref.bitOffset >= 0) {
-                if (!rawStrings.containsKey(sref.bitOffset)) {
-                    Wrap tmpOffsetWrap = new Wrap(sref.bitOffset);
-
-                    /** actually, it should store the fullString and subStringOffset,
-                     * but as we don't have to use this compression feature,
-                     * we will store only the part of String we need
-                     * */
-
-                    /** int key = rawStrings.Keys.Last(c => c < sref.BitOffset);
-                     * String fullString = rawStrings[key];
-                     * int subStringOffset = fullString.LastIndexOf(partString);
-                     * sref.StartOfString = subStringOffset;
-                     * sref.Data = fullString;
-                     */
-                    sref.Data = GetString(tmpOffsetWrap);
-                } else {
-                    sref.Data = rawStrings.get(sref.bitOffset);
-                }
+                /** actually, it should store the fullString and subStringOffset,
+                 * but as we don't have to use this compression feature,
+                 * we will store only the part of String we need
+                 * */
+                /** int key = rawStrings.Keys.Last(c => c < sref.BitOffset);
+                 * String fullString = rawStrings[key];
+                 * int subStringOffset = fullString.LastIndexOf(partString);
+                 * sref.StartOfString = subStringOffset;
+                 * sref.Data = fullString;
+                 */
+                sref.Data = rawStrings.containsKey(sref.bitOffset) ?
+                        rawStrings.get(sref.bitOffset) :
+                        GetString(new Wrap(sref.bitOffset));
             }
             stringRefs.add(sref);
         }
@@ -197,13 +192,21 @@ public class TlkFile  {
      *  </summary>
      * <param name="fileName"></param>
      * */
-    private void SaveToXmlFile(String fileName) throws XMLStreamException, FileNotFoundException {
-        int totalCount = stringRefs.size();
-        int count = 0;
-        int lastProgress = -1;
+    private void SaveToXmlFile(String fileName) throws XMLStreamException, IOException {
 
-        XMLOutputFactory output = XMLOutputFactory.newInstance();
-        XMLStreamWriter xr = output.createXMLStreamWriter(new FileOutputStream(fileName));
+        // Creating FileWriter object
+        Writer fileWriter = new FileWriter(fileName);
+
+        // Getting the XMLOutputFactory instance
+        XMLOutputFactory xmlOutputFactory
+                = XMLOutputFactory.newInstance();
+
+        // Creating XMLStreamWriter object from
+        // xmlOutputFactory.
+        XMLStreamWriter xr
+                = xmlOutputFactory.createXMLStreamWriter(
+                fileWriter);
+
         xr.writeStartDocument("utf-8", "1.0");
         xr.writeStartElement("tlkFile");
         xr.writeAttribute("TLKToolVersion", "how to get version???");
@@ -227,12 +230,8 @@ public class TlkFile  {
             xr.writeStartElement("data");// </data>
             xr.writeCharacters(s.bitOffset < 0 ? "-1" : s.Data);
             xr.writeEndElement(); // </data>
-            xr.writeEndElement(); // </string>
 
-            int progress = (++count * 100) / totalCount;
-            if (progress > lastProgress) {
-                lastProgress = progress;
-            }
+            xr.writeEndElement(); // </string>
         }
         xr.writeComment("Female entries section end");
         xr.writeEndElement(); // </tlkFile>

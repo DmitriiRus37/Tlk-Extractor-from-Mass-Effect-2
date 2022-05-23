@@ -37,7 +37,7 @@ import java.util.stream.IntStream;
 public class BitArray {
 
     private final byte[] repn;
-    private final long length;
+    private final int length;
 
     public static final byte BITS_PER_UNIT = 8;
 
@@ -49,13 +49,12 @@ public class BitArray {
         return 1 << (BITS_PER_UNIT - 1 - (idx % BITS_PER_UNIT));
     }
 
-
     /**
      * Creates a main.java.ru.BitArray of the specified size, initialized to zeros.
      */
     public BitArray(int length) throws IllegalArgumentException {
         if (length < 0) {
-            throw new IllegalArgumentException("Negative length for main.java.ru.BitArray");
+            throw new IllegalArgumentException("Negative length for BitArray");
         }
         this.length = length;
         repn = new byte[(length + BITS_PER_UNIT - 1)/BITS_PER_UNIT];
@@ -63,16 +62,16 @@ public class BitArray {
 
 
     /**
-     * Creates a main.java.ru.BitArray of the specified size, initialized from the
+     * Creates a BitArray of the specified size, initialized from the
      * specified byte array.  The most significant bit of a[0] gets
-     * index zero in the main.java.ru.BitArray.  The array a must be large enough
-     * to specify a value for every bit in the main.java.ru.BitArray.  In other words,
+     * index zero in the BitArray.  The array a must be large enough
+     * to specify a value for every bit in the BitArray.  In other words,
      * 8*a.length <= length.
      */
     public BitArray(byte[] a) throws IllegalArgumentException {
-        length = (long) a.length * BITS_PER_UNIT;
-        int repLength = (int) ((length + BITS_PER_UNIT - 1)/BITS_PER_UNIT);
-        long unusedBits = (long) repLength *BITS_PER_UNIT - length;
+        length = a.length * BITS_PER_UNIT;
+        int repLength = (length + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+        int unusedBits = repLength * BITS_PER_UNIT - length;
         byte bitMask = (byte) (0xFF << unusedBits);
 
         /*
@@ -88,12 +87,12 @@ public class BitArray {
     }
 
     /**
-     * Create a main.java.ru.BitArray whose bits are those of the given array
+     * Create a BitArray whose bits are those of the given array
      * of Booleans.
      */
     public BitArray(boolean[] bits) {
         length = bits.length;
-        repn = new byte[Math.toIntExact((length + 7) / 8)];
+        repn = new byte[(length + 7)/8];
 
         for (int i=0; i < length; i++) {
             set(i, bits[i]);
@@ -110,7 +109,7 @@ public class BitArray {
     }
 
     /**
-     *  Returns the indexed bit in this main.java.ru.BitArray.
+     *  Returns the indexed bit in this BitArray.
      */
     public boolean get(int index) throws ArrayIndexOutOfBoundsException {
         if (index < 0 || index >= length) {
@@ -134,9 +133,9 @@ public class BitArray {
     }
 
     private boolean getBit(boolean[] byteImpl, int index, Endian e) {
-        return e.equals(Endian.BigEndian) ?
-                byteImpl[index % BITS_PER_UNIT] :
-                byteImpl[Byte.SIZE - 1 - index % BITS_PER_UNIT];
+        return byteImpl[e.equals(Endian.BigEndian) ?
+                index % BITS_PER_UNIT :
+                Byte.SIZE - 1 - index % BITS_PER_UNIT];
     }
 
     /**
@@ -153,19 +152,19 @@ public class BitArray {
     }
 
     /**
-     * Returns the length of this main.java.ru.BitArray.
+     * Returns the length of this BitArray.
      */
-    public long length() {
+    public int length() {
         return length;
     }
 
     /**
-     * Returns a Byte array containing the contents of this main.java.ru.BitArray.
-     * The bit stored at index zero in this main.java.ru.BitArray will be copied
+     * Returns a Byte array containing the contents of this BitArray.
+     * The bit stored at index zero in this BitArray will be copied
      * into the most significant bit of the zeroth element of the
      * returned byte array.  The last byte of the returned byte array
      * will be contain zeros in any bits that do not have corresponding
-     * bits in the main.java.ru.BitArray.  (This matters only if the main.java.ru.BitArray's size
+     * bits in the BitArray.  (This matters only if the BitArray's size
      * is not a multiple of 8.)
      */
     public byte[] toByteArray() {
@@ -176,7 +175,7 @@ public class BitArray {
         if (obj == this) {
             return true;
         }
-        if (obj == null || !(obj instanceof BitArray)) {
+        if (!(obj instanceof BitArray)) {
             return false;
         }
         BitArray ba = (BitArray) obj;
@@ -184,10 +183,10 @@ public class BitArray {
     }
 
     /**
-     * Return a boolean array with the same bit values as this main.java.ru.BitArray.
+     * Return a boolean array with the same bit values as this BitArray.
      */
     public boolean[] toBooleanArray() {
-        boolean[] bits = new boolean[Math.toIntExact(length)];
+        boolean[] bits = new boolean[length];
 
         for (int i=0; i < length; i++) {
             bits[i] = get(i);
@@ -206,7 +205,7 @@ public class BitArray {
         for (byte b : repn) {
             hashCode = 31 * hashCode + b;
         }
-        return Math.toIntExact(hashCode ^ length);
+        return hashCode ^ length;
     }
 
 
@@ -237,7 +236,7 @@ public class BitArray {
     private static final int BYTES_PER_LINE = 8;
 
     /**
-     *  Returns a String representation of this main.java.ru.BitArray.
+     *  Returns a String representation of this BitArray.
      */
     public String toString() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -256,9 +255,9 @@ public class BitArray {
     }
 
     public BitArray truncate() {
-        for (int i = Math.toIntExact(length - 1); i>=0; i--) {
+        for (int i=length-1; i>=0; i--) {
             if (get(i)) {
-                return new BitArray( Arrays.copyOf(repn, (i + BITS_PER_UNIT)/BITS_PER_UNIT));
+                return new BitArray(Arrays.copyOf(repn, (i + BITS_PER_UNIT)/BITS_PER_UNIT));
             }
         }
         return new BitArray(1);

@@ -19,11 +19,27 @@
         </plugins>
     </build>
 
+    <properties>
+<!--        <maven-compiler-plugin.source>8</maven-compiler-plugin.source>-->
+<!--        <maven-compiler-plugin.target>8</maven-compiler-plugin.target>-->
+<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+<!--        <mongodb-driver-sync.version>4.6.0</mongodb-driver-sync.version>-->
+<!--        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>-->
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.1.212</version>
+        </dependency>
+
+
+
     </dependencies>
 </project>

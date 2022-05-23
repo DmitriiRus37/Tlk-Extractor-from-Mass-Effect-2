@@ -5,15 +5,17 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.sql.SQLException;
 
-public class MainClass {
+public class Main {
 
-    public static void main(String[] args) throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
-       args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
+    public static void main(String[] args) throws IOException, XMLStreamException, ParserConfigurationException, SAXException, SQLException {
+        args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
 
         if (!args[0].equals("create") && !args[0].equals("load")) {
             throw new RuntimeException();
         }
+
         Action action = Action.valueOf(args[0]);
         String inputPath = args[1];
         String outputPath;
@@ -46,4 +48,5 @@ public class MainClass {
         load,
         create
     }
+
 }

@@ -4,12 +4,13 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerConfigurationException;
 import java.io.IOException;
 import java.sql.SQLException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, XMLStreamException, ParserConfigurationException, SAXException, SQLException {
+    public static void main(String[] args) throws IOException, XMLStreamException, ParserConfigurationException, SAXException, SQLException, TransformerConfigurationException {
         args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
 
         if (!args[0].equals("create") && !args[0].equals("load")) {

@@ -1,10 +1,20 @@
 package ru;
 
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -122,16 +132,17 @@ public class TlkFile  {
      *  <param name="fileName"></param>
      *  <param name="ff"></param>
      */
-    public void dumpToFile(String fileName, FileFormat ff) throws XMLStreamException, IOException {
+    public void dumpToFile(String fileName, FileFormat ff) throws XMLStreamException, IOException, TransformerConfigurationException {
 
         Files.deleteIfExists(Paths.get(fileName));
         /** for now, it's better not to sort, to preserve original order */
         // StringRefs.Sort(CompareTlkStringRef);
 
         if (ff.equals(FileFormat.xml)) {
-            SaveToXmlFile(fileName);
+            saveToXmlFile(fileName);
+            prettyXmlFile(fileName);
         } else {
-            SaveToTextFile(fileName);
+            saveToTextFile(fileName);
         }
     }
 
@@ -192,20 +203,17 @@ public class TlkFile  {
      *  </summary>
      * <param name="fileName"></param>
      * */
-    private void SaveToXmlFile(String fileName) throws XMLStreamException, IOException {
+    private void saveToXmlFile(String fileName)
+            throws XMLStreamException, IOException, TransformerConfigurationException {
 
         // Creating FileWriter object
         Writer fileWriter = new FileWriter(fileName);
 
         // Getting the XMLOutputFactory instance
-        XMLOutputFactory xmlOutputFactory
-                = XMLOutputFactory.newInstance();
+        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 
-        // Creating XMLStreamWriter object from
-        // xmlOutputFactory.
-        XMLStreamWriter xr
-                = xmlOutputFactory.createXMLStreamWriter(
-                fileWriter);
+        // Creating XMLStreamWriter object from xmlOutputFactory.
+        XMLStreamWriter xr = xmlOutputFactory.createXMLStreamWriter(fileWriter);
 
         xr.writeStartDocument("utf-8", "1.0");
         xr.writeStartElement("tlkFile");
@@ -239,6 +247,40 @@ public class TlkFile  {
         xr.close();
     }
 
+    private void prettyXmlFile(String fileName) throws IOException {
+        String xmlString;
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            StringBuilder stringBuilder = new StringBuilder();
+            String ls = System.getProperty("line.separator");
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append(ls);
+            }
+            xmlString = stringBuilder.toString();
+        }
+
+        try {
+            InputSource src = new InputSource(new StringReader(xmlString));
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(src);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", 4);
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+//            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, true ? "yes" : "no");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            PrintWriter writer = new PrintWriter(fileName, StandardCharsets.UTF_8);
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+        } catch (IOException | IllegalArgumentException |
+                ParserConfigurationException | TransformerException | SAXException e) {
+            throw new RuntimeException("Error occurs when pretty-printing xml:\n" + xmlString, e);
+        }
+    }
+
     /** <summary>
      *      Writing data in a normal text format.
      * </summary>
@@ -247,7 +289,7 @@ public class TlkFile  {
      * </remarks>
      * <param name="fileName"></param>
      */
-    private void SaveToTextFile(String fileName)
+    private void saveToTextFile(String fileName)
     {
         int totalCount = stringRefs.size();
         int count = 0;

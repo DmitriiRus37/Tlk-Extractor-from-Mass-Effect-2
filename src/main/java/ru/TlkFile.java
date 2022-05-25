@@ -13,7 +13,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,11 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 public class TlkFile  {
-    TlkHeader header;
-    public List<TlkStringRef> stringRefs;
-    List<HuffmanNode> characterTree;
-    BitArray bits;
-    ByteOrder byteOrder = ByteOrder.nativeOrder();
+    private TlkHeader header;
+    private List<TlkStringRef> stringRefs;
+    private List<HuffmanNode> characterTree;
+    private BitArray bits;
 
     /** <summary>
      *      Loads a TLK file into memory.
@@ -204,7 +202,7 @@ public class TlkFile  {
      * <param name="fileName"></param>
      * */
     private void saveToXmlFile(String fileName)
-            throws XMLStreamException, IOException, TransformerConfigurationException {
+            throws XMLStreamException, IOException {
 
         // Creating FileWriter object
         Writer fileWriter = new FileWriter(fileName);
@@ -289,8 +287,7 @@ public class TlkFile  {
      * </remarks>
      * <param name="fileName"></param>
      */
-    private void saveToTextFile(String fileName)
-    {
+    private void saveToTextFile(String fileName) {
         int totalCount = stringRefs.size();
         int count = 0;
         int lastProgress = -1;

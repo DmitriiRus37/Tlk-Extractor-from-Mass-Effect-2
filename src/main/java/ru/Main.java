@@ -35,12 +35,12 @@ public class Main {
         if (action.equals(Action.load)) {
             TlkFile tf = new TlkFile();
             tf.loadTlkData(inputPath, true);
-            tf.dumpToFile(outputPath, FileFormat.xml);
+            tf.dumpToFile(outputPath, FileFormat.XML);
             // debug
             // tf.PrintHuffmanTree();
         } else {
             HuffmanCompression hc = new HuffmanCompression();
-            hc.loadInputData(inputPath, FileFormat.xml, true);
+            hc.loadInputData(inputPath, FileFormat.XML, true);
             hc.saveToTlkFile(outputPath, true);
         }
     }

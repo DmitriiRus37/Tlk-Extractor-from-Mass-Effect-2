@@ -16,13 +16,13 @@ import java.nio.file.Path;
 import java.util.*;
 
 class HuffmanCompression {
-    private String _inputFileVersion = "1.0.0.0";
-    private List<TlkEntry> _inputData = new LinkedList<>();
-    private Map<Character, Integer> frequencyCount = new HashMap<>();
-    private List<HuffmanNode> _huffmanTree = new LinkedList<>();
-    private Map<Character, BitArray> _huffmanCodes = new HashMap<>();
+    private String inputFileVersion = "1.0.0.0";
+    private final List<TlkEntry> inputData = new LinkedList<>();
+    private final Map<Character, Integer> frequencyCount = new HashMap<>();
+    private final List<HuffmanNode> huffmanTree = new LinkedList<>();
+    private final Map<Character, BitArray> huffmanCodes = new HashMap<>();
 
-    private class TlkEntry implements Comparable {
+    private static class TlkEntry implements Comparable {
         public int stringID;
         public int position;
         public String data;
@@ -40,7 +40,7 @@ class HuffmanCompression {
 
     }
 
-    private class HuffmanNode {
+    private static class HuffmanNode {
         public char data;
         public int frequencyCount;
         public HuffmanNode left;
@@ -67,9 +67,9 @@ class HuffmanCompression {
      * <param name="debugVersion"></param>
      */
     public void loadInputData(String fileName, FileFormat ff, boolean debugVersion) throws IOException, ParserConfigurationException, SAXException {
-        _inputData.clear();
+        inputData.clear();
         LoadXmlInputData(fileName, debugVersion);
-        Collections.sort(_inputData);
+        Collections.sort(inputData);
         PrepareHuffmanCoding();
     }
 
@@ -95,7 +95,7 @@ class HuffmanCompression {
         Map<Integer, Integer> entries2 = new HashMap<>();
         int offset = 0;
 
-        for (TlkEntry entry : _inputData) {
+        for (TlkEntry entry : inputData) {
             if (entry.stringID < 0) {
                 if (!entries1.containsKey(entry.stringID)) {
                     entries1.put(entry.stringID, Integer.parseInt(entry.data));
@@ -113,8 +113,8 @@ class HuffmanCompression {
 
             /* for every character in a string, put it's binary code into data array */
             for (char c : entry.data.toCharArray()) {
-                binaryData.add(_huffmanCodes.get(c));
-                offset += _huffmanCodes.get(c).length();
+                binaryData.add(huffmanCodes.get(c));
+                offset += huffmanCodes.get(c).length();
             }
         }
 
@@ -188,7 +188,7 @@ class HuffmanCompression {
         /* read and store TLK Tool version, which was used to create the XML file */
         String toolVersion = String.valueOf(document.getAttributes().getNamedItem("TLKToolVersion"));
         if (toolVersion != null) {
-            _inputFileVersion = toolVersion;
+            inputFileVersion = toolVersion;
         }
 
         // Получение списка всех элементов string внутри корневого элемента.
@@ -213,7 +213,7 @@ class HuffmanCompression {
                 data += '\0';
             }
             /* only add debug info if we are in debug mode and StringID is positive AND it's localizable */
-            _inputData.add(id >= 0 && debugVersion && (id & 0x8000000) != 0x8000000 ?
+            inputData.add(id >= 0 && debugVersion && (id & 0x8000000) != 0x8000000 ?
                     new TlkEntry(id, position, "(#" + id + ") " + data) :
                     new TlkEntry(id, position, data)
             );
@@ -223,7 +223,7 @@ class HuffmanCompression {
         String lastEntryFixVersion = "1.0.3";
 
         /* check if someone isn't loading the bugged version < 1.0.3 */
-        if (compareVersionStrings(_inputFileVersion, lastEntryFixVersion, "<")) {
+        if (compareVersionStrings(inputFileVersion, lastEntryFixVersion, "<")) {
             throw new RuntimeException();
         }
     }
@@ -304,7 +304,7 @@ class HuffmanCompression {
      */
     private void PrepareHuffmanCoding() {
         frequencyCount.clear();
-        for (TlkEntry entry : _inputData) {
+        for (TlkEntry entry : inputData) {
             if (entry.stringID < 0) {
                 continue;
             }
@@ -315,7 +315,7 @@ class HuffmanCompression {
                 frequencyCount.put(c, frequencyCount.get(c) + 1);
             }
         }
-        frequencyCount.forEach((key, value) -> _huffmanTree.add(new HuffmanNode(key, value)));
+        frequencyCount.forEach((key, value) -> huffmanTree.add(new HuffmanNode(key, value)));
         BuildHuffmanTree();
         BuildCodingArray();
         // DebugTools.LoadHuffmanTree(_huffmanCodes);
@@ -327,13 +327,13 @@ class HuffmanCompression {
      * </summary>
      */
     private void BuildHuffmanTree() {
-        while (_huffmanTree.size() > 1) {
+        while (huffmanTree.size() > 1) {
             /* sort Huffman Nodes by frequency */
-            _huffmanTree.sort(HuffmanCompression::CompareNodes);
-            HuffmanNode parent = new HuffmanNode(_huffmanTree.get(0), _huffmanTree.get(1));
-            _huffmanTree.remove(0);
-            _huffmanTree.remove(0);
-            _huffmanTree.add(parent);
+            huffmanTree.sort(HuffmanCompression::CompareNodes);
+            HuffmanNode parent = new HuffmanNode(huffmanTree.get(0), huffmanTree.get(1));
+            huffmanTree.remove(0);
+            huffmanTree.remove(0);
+            huffmanTree.add(parent);
         }
     }
 
@@ -344,7 +344,7 @@ class HuffmanCompression {
     private void BuildCodingArray() {
         /* stores a binary code */
         List<Boolean> currentCode = new LinkedList<>();
-        HuffmanNode currenNode = _huffmanTree.get(0);
+        HuffmanNode currenNode = huffmanTree.get(0);
         TraverseHuffmanTree(currenNode, currentCode);
     }
 
@@ -362,7 +362,7 @@ class HuffmanCompression {
                 arr[i] = code.get(i);
             }
             BitArray ba = new BitArray(arr);
-            _huffmanCodes.put(node.data, ba);
+            huffmanCodes.put(node.data, ba);
         } else {
             /* adds 0 to the code - process left son*/
             code.add(false);
@@ -386,7 +386,7 @@ class HuffmanCompression {
         Map<Integer, HuffmanNode> indices = new HashMap<>();
 
         int index = 0;
-        q.add(_huffmanTree.get(0));
+        q.add(huffmanTree.get(0));
 
         while (q.size() > 0) {
             HuffmanNode node = q.remove();

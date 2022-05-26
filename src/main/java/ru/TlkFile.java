@@ -1,5 +1,9 @@
 package ru;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -115,7 +119,7 @@ public class TlkFile  {
                  * sref.StartOfString = subStringOffset;
                  * sref.Data = fullString;
                  */
-                sref.Data = rawStrings.containsKey(sref.bitOffset) ?
+                sref.data = rawStrings.containsKey(sref.bitOffset) ?
                         rawStrings.get(sref.bitOffset) :
                         GetString(new Wrap(sref.bitOffset));
             }
@@ -136,7 +140,7 @@ public class TlkFile  {
         /** for now, it's better not to sort, to preserve original order */
         // StringRefs.Sort(CompareTlkStringRef);
 
-        if (ff.equals(FileFormat.xml)) {
+        if (ff.equals(FileFormat.XML)) {
             saveToXmlFile(fileName);
             prettyXmlFile(fileName);
         } else {
@@ -234,7 +238,7 @@ public class TlkFile  {
             xr.writeEndElement(); // </position>
 
             xr.writeStartElement("data");// </data>
-            xr.writeCharacters(s.bitOffset < 0 ? "-1" : s.Data);
+            xr.writeCharacters(s.bitOffset < 0 ? "-1" : s.data);
             xr.writeEndElement(); // </data>
 
             xr.writeEndElement(); // </string>
@@ -293,7 +297,7 @@ public class TlkFile  {
         int lastProgress = -1;
 
         for (TlkStringRef s : stringRefs) {
-            String line = s.stringId + ": " + s.Data + "\r\n";
+            String line = s.stringId + ": " + s.data + "\r\n";
 
             try (FileWriter fw = new FileWriter(fileName, true)) {
                 fw.write(line);
@@ -330,5 +334,56 @@ public class TlkFile  {
 //            int result = strRef1.stringId.compareTo(strRef2.stringId);
 //            return result;
 //        }
+
+    public static class TlkHeader {
+        public int magic;
+        public int ver;
+        public int minVer;
+        public int entry1Count;
+        public int entry2Count;
+        public int treeNodeCount;
+        public int dataLen;
+
+        public TlkHeader(InputStream r) throws IOException {
+            this.magic = TlkFile.readInt32(r);
+            this.ver = TlkFile.readInt32(r);
+            this.minVer = TlkFile.readInt32(r);
+            this.entry1Count = TlkFile.readInt32(r);
+            this.entry2Count = TlkFile.readInt32(r);
+            this.treeNodeCount = TlkFile.readInt32(r);
+            this.dataLen = TlkFile.readInt32(r);
+        }
+
+    }
+
+    public static class TlkStringRef {
+        public int stringId;
+        public int bitOffset;
+
+        public String data;
+        public int position;
+
+        public TlkStringRef(InputStream r) throws IOException {
+            this.stringId = TlkFile.readInt32(r);
+            this.bitOffset = TlkFile.readInt32(r);
+        }
+    }
+
+    public static class HuffmanNode {
+        public int leftNodeId;
+        public int rightNodeId;
+
+        public HuffmanNode(InputStream r) throws IOException {
+            this.leftNodeId = TlkFile.readInt32(r);
+            this.rightNodeId = TlkFile.readInt32(r);
+        }
+    }
+
+    @NoArgsConstructor @AllArgsConstructor
+    @Getter @Setter
+    public static class Wrap {
+        int value;
+    }
+
 }
 

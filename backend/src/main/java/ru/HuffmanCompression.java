@@ -1,4 +1,4 @@
-package main.java.ru;
+package ru;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -240,39 +240,35 @@ class HuffmanCompression {
             arr2New[i] = arr2.length > i ? Integer.parseInt(arr2[i]) : 0;
         }
 
-        switch (sign) {
-            case "<" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return false;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return true;
-                    }
+        if ("<".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return false;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return true;
                 }
-                return false;
             }
-            case ">" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return true;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return false;
-                    }
+            return false;
+        } else if (">".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return true;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return false;
                 }
-                return false;
             }
-            case "=" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return false;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return false;
-                    }
+            return false;
+        } else if ("=".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return false;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return false;
                 }
-                return true;
             }
-            default -> throw new RuntimeException("Set valid sign( '<' '>' '=' )");
+            return true;
         }
+        throw new RuntimeException("Set valid sign( '<' '>' '=' )");
     }
 
     /* maybe will be finished in the future */

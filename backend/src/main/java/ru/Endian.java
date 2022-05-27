@@ -1,4 +1,4 @@
-package main.java.ru;
+package ru;
 
 public enum Endian {
     BigEndian,

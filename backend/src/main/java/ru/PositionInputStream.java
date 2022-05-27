@@ -1,4 +1,4 @@
-package main.java.ru;
+package ru;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -69,6 +69,10 @@ public final class PositionInputStream extends FilterInputStream {
         }
         super.reset();
         pos = mark;
+    }
+
+    public void skipNBytes(int count) {
+
     }
 
 }

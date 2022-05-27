@@ -1,4 +1,4 @@
-package main.java.ru;
+package ru;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -325,7 +325,7 @@ public class TlkFile  {
 
     public static PositionInputStream baseStreamSeek(long pos, String fileName) throws IOException {
         PositionInputStream r = new PositionInputStream(new FileInputStream(fileName));
-        r.skipNBytes(pos);
+        r.skip(pos);
         return r;
     }
 

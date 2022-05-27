@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?language java?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="389.0" prefWidth="702.0" fx:controller="ru.FxmlController" xmlns="http://javafx.com/javafx/11.0.3-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TabPane layoutX="12.0" layoutY="46.0" prefHeight="334.0" prefWidth="677.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Create XML">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="246.0" prefWidth="677.0">
+                     <children>
+                        <TextField layoutX="200.0" layoutY="20.0" prefHeight="30.0" prefWidth="330.0" promptText="Input path" />
+                        <Label layoutX="38.0" layoutY="25.0" prefHeight="20.0" prefWidth="120.0" text="Select Input file" textAlignment="CENTER" />
+                        <Label layoutX="38.0" layoutY="70.0" prefHeight="20.0" prefWidth="120.0" text="Select Output file" />
+                        <TextField layoutX="200.0" layoutY="65.0" prefHeight="30.0" prefWidth="330.0" promptText="Output path" />
+                        <ProgressBar layoutX="201.0" layoutY="156.0" prefHeight="18.0" prefWidth="439.0" progress="0.0" />
+                        <Label layoutX="38.0" layoutY="156.0" text="PROGRESS:"/>
+                        <Label layoutX="38.0" layoutY="194.0" text="STATUS:"/>
+                        <TextField layoutX="200.0" layoutY="189.0" prefHeight="28.0" prefWidth="116.0" />
+                        <Button layoutX="201.0" layoutY="111.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="86.0" text="START" />
+                        <Button fx:id="buttonToSelectInputTlkFile" layoutX="541.0" layoutY="20.0" mnemonicParsing="false"  prefHeight="30.0" prefWidth="100.0" text="Select" />
+                        <Button fx:id="buttonToSelectOutputXmlFile" layoutX="541.0" layoutY="65.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="100.0" text="Select" />
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Create XML">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+            <Tab text="Help">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="301.0" prefWidth="670.0" />
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <Label layoutX="322.0" layoutY="14.0" text="Load TLK" AnchorPane.topAnchor="14.0" />
+   </children>
+</AnchorPane>

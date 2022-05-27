@@ -1,4 +1,4 @@
-package ru;
+package main.java.ru;
 
 public enum FileFormat {
     TXT,

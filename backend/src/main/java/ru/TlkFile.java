@@ -1,4 +1,4 @@
-package ru;
+package main.java.ru;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

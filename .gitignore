@@ -1,4 +1,2 @@
-out/
-/target/
-TlkMassEffect.iml
-/.idea
+backend/target
+backend/backend.iml

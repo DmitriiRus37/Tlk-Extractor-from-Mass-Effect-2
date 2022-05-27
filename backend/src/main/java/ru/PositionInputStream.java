@@ -1,4 +1,4 @@
-package ru;
+package main.java.ru;
 
 import java.io.FilterInputStream;
 import java.io.IOException;

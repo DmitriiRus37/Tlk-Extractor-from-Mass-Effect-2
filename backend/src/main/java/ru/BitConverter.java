@@ -1,4 +1,4 @@
-package ru;
+package main.java.ru;
 
 import java.lang.Exception;
 import java.nio.ByteBuffer;

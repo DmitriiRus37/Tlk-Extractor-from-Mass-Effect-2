@@ -17,7 +17,7 @@ public class FxmlController {
 
     public File inputTlkFile;
     public File outputXmlFile;
-    public Main app;
+    public App app;
 
     @FXML
     private Button buttonToSelectInputTlkFile;
@@ -30,12 +30,11 @@ public class FxmlController {
     @FXML
     private TextField textFieldIOStatus;
 
-
     @FXML
     private void selectInputTlkFile(ActionEvent event) {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TLK files", "*.tlk"));
-        File f = fc.showOpenDialog(null);
+        File f = fc.showOpenDialog(app.getPrimaryStage());
     }
 
     @FXML

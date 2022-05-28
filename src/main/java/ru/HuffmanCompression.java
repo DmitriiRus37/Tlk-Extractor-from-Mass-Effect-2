@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 class HuffmanCompression {
@@ -83,7 +83,7 @@ class HuffmanCompression {
      *  <param name="isPC"></param>
      */
     public void saveToTlkFile(String fileName, boolean isPC) throws IOException {
-        Files.deleteIfExists(Path.of(fileName));
+        Files.deleteIfExists(Paths.get(fileName));
 
         /* converts Huffmann Tree to binary form */
         List<Integer> treeBuffer = ConvertHuffmanTreeToBuffer();

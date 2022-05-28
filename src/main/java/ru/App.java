@@ -5,40 +5,31 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.xml.sax.SAXException;
+import lombok.Getter;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.TransformerConfigurationException;
 import java.io.IOException;
 
-public class Main extends Application {
+public class App extends Application {
 
+    @Getter
     private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        this.primaryStage = primaryStage;
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/app.fxml"));
-
         Parent root = loader.load();
+
         FxmlController controller = loader.getController();
         controller.setApp(this);
 
         primaryStage.setScene(new Scene(root));
-
-
         primaryStage.show();
-
     }
 
-    public static void main(String[] args)
-            throws IOException,
-            XMLStreamException,
-            TransformerConfigurationException,
-            ParserConfigurationException,
-            SAXException {
+    public static void main(String[] args) {
         Application.launch();
-        args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
+//        args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
     }
 
 //        if (!args[0].equals("create") && !args[0].equals("load")) {

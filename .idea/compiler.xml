@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="backend" target="11" />
+      <module name="backend" target="1.8" />
       <module name="tlk-tool" target="14" />
       <module name="TlkMassEffect" target="14" />
     </bytecodeTargetLevel>

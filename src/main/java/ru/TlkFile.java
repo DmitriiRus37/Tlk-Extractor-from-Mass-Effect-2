@@ -17,7 +17,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -274,7 +273,7 @@ public class TlkFile  {
 //            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, true ? "yes" : "no");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-            PrintWriter writer = new PrintWriter(fileName, StandardCharsets.UTF_8);
+            PrintWriter writer = new PrintWriter(fileName);
             transformer.transform(new DOMSource(document), new StreamResult(writer));
 
         } catch (IOException | IllegalArgumentException |

@@ -25,6 +25,7 @@ public class App extends Application {
 
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+        this.primaryStage.setResizable(false);
     }
 
     public static void main(String[] args) {

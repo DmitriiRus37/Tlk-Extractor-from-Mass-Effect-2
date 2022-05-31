@@ -35,7 +35,7 @@ class HuffmanCompression {
 
         @Override
         public int compareTo(Object o) {
-            return Integer.compare(this.position, (Integer)o);
+            return Integer.compare(this.position, ((TlkEntry) o).position);
         }
 
     }
@@ -186,7 +186,7 @@ class HuffmanCompression {
         // Получение списка всех элементов tlkFile внутри корневого элемента (getDocumentElement возвращает ROOT элемент XML файла).
         NodeList tlkFileElements = document.getDocumentElement().getElementsByTagName("tlkFile");
         /* read and store TLK Tool version, which was used to create the XML file */
-        String toolVersion = String.valueOf(document.getAttributes().getNamedItem("TLKToolVersion"));
+        String toolVersion = String.valueOf(document.getDocumentElement().getAttributes().getNamedItem("TLKToolVersion").getNodeValue());
         if (toolVersion != null) {
             inputFileVersion = toolVersion;
         }

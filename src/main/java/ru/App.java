@@ -20,7 +20,7 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/app.fxml"));
         Parent root = loader.load();
 
-        FxmlController controller = loader.getController();
+        FxmlControllerTlkToXml controller = loader.getController();
         controller.setApp(this);
 
         primaryStage.setScene(new Scene(root));
@@ -29,44 +29,6 @@ public class App extends Application {
 
     public static void main(String[] args) {
         Application.launch();
-//        args = new String[]{"load", "/home/gur/Downloads/dir3/Mass Effect 3 International Language Pack/BIOGame_RUS.tlk"};
-    }
-
-//        if (!args[0].equals("create") && !args[0].equals("load")) {
-//            throw new RuntimeException();
-//        }
-//
-//        Action action = Action.valueOf(args[0]);
-//        String inputPath = args[1];
-//        String outputPath;
-//        if (args.length == 3) {
-//            outputPath = args[2];
-//        } else {
-//            if (action.equals(Action.load)) {
-//                outputPath = inputPath.substring(0, inputPath.lastIndexOf('.')) + ".xml";
-//            } else if (action.equals(Action.create)) {
-//                outputPath = inputPath.substring(0, inputPath.lastIndexOf('.')) + ".tlk";
-//            } else {
-//                throw new RuntimeException();
-//            }
-//        }
-//
-//        if (action.equals(Action.load)) {
-//            TlkFile tf = new TlkFile();
-//            tf.loadTlkData(inputPath, true);
-//            tf.dumpToFile(outputPath, FileFormat.XML);
-//            // debug
-//            // tf.PrintHuffmanTree();
-//        } else {
-//            HuffmanCompression hc = new HuffmanCompression();
-//            hc.loadInputData(inputPath, FileFormat.XML, true);
-//            hc.saveToTlkFile(outputPath, true);
-//        }
-//    }
-
-    private enum Action {
-        load,
-        create
     }
 
 }

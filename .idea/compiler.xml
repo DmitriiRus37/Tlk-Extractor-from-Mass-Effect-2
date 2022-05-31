@@ -7,11 +7,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="backend" />
+        <module name="tlk-extractor" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="backend" target="1.8" />
+      <module name="tlk-extractor" target="1.8" />
       <module name="tlk-tool" target="14" />
       <module name="TlkMassEffect" target="14" />
     </bytecodeTargetLevel>

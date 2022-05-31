@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ab53c62f-6508-4211-8c15-f147938e4a13" name="Changes" comment="gitignore upd">
+    <list default="true" id="ab53c62f-6508-4211-8c15-f147938e4a13" name="Changes" comment="status added">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/FxmlControllerTlkToXml.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/FxmlController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/FxmlControllerXmlToTlk.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/TlkFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/TlkFile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/app.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/app.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +104,7 @@
       <option name="ALTERNATIVE_JRE_PATH" value="$USER_HOME$/.jdks/corretto-1.8.0_332/jre" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="ru.App" />
-      <module name="backend" />
+      <module name="tlk-extractor" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="ru.*" />
@@ -122,6 +117,19 @@
     </configuration>
     <configuration name="Angular Application" type="JavascriptDebugType" uri="http://localhost:4200">
       <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="tlk-extractor" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="tlk-extractor" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration name="electron.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/front/src/electron.js" working-dir="$PROJECT_DIR$/front/src">
       <method v="2" />
@@ -220,7 +228,7 @@
       <workItem from="1653973581708" duration="9622000" />
       <workItem from="1653989985489" duration="6356000" />
       <workItem from="1654016550455" duration="2022000" />
-      <workItem from="1654020800883" duration="1443000" />
+      <workItem from="1654020800883" duration="2121000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1652890773827</created>
@@ -516,7 +524,14 @@
       <option name="project" value="LOCAL" />
       <updated>1654021314692</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="status added">
+      <created>1654022926929</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1654022926929</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -536,7 +551,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="HuffmanCompression added" />
     <MESSAGE value="continue" />
     <MESSAGE value="continue [2]" />
     <MESSAGE value="continue [3]" />
@@ -561,7 +575,8 @@
     <MESSAGE value="load xml to tlk added" />
     <MESSAGE value="removed unused fields" />
     <MESSAGE value="gitignore upd" />
-    <option name="LAST_COMMIT_MESSAGE" value="gitignore upd" />
+    <MESSAGE value="status added" />
+    <option name="LAST_COMMIT_MESSAGE" value="status added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -580,6 +595,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/ru/HuffmanCompression.java</url>
           <line>37</line>
           <option name="timeStamp" value="123" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/ru/App.java</url>
+          <line>27</line>
+          <option name="timeStamp" value="124" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

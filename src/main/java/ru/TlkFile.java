@@ -139,7 +139,7 @@ public class TlkFile  {
      *  <param name="fileName"></param>
      *  <param name="ff"></param>
      */
-    public void storeToFile(String fileName, FileFormat ff, FxmlControllerTlkToXml controller) throws XMLStreamException, IOException {
+    public void storeToFile(String fileName, FileFormat ff, FxmlController controller) throws XMLStreamException, IOException {
 
         long start = System.nanoTime();
         Files.deleteIfExists(Paths.get(fileName));
@@ -213,7 +213,7 @@ public class TlkFile  {
      *  </summary>
      * <param name="fileName"></param>
      * */
-    private void saveToXmlFile(String fileName, FxmlControllerTlkToXml controller) throws XMLStreamException, IOException {
+    private void saveToXmlFile(String fileName, FxmlController controller) throws XMLStreamException, IOException {
         int totalCount = stringRefs.size();
 
         // Creating FileWriter object
@@ -299,7 +299,7 @@ public class TlkFile  {
      * </remarks>
      * <param name="fileName"></param>
      */
-    private void saveToTextFile(String fileName, FxmlControllerTlkToXml controller) {
+    private void saveToTextFile(String fileName, FxmlController controller) {
         int totalCount = stringRefs.size();
 
         for (int i = 0; i < stringRefs.size(); i++) {

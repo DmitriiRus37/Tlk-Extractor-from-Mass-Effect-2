@@ -20,12 +20,12 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/app.fxml"));
         Parent root = loader.load();
 
-        FxmlControllerTlkToXml controller = loader.getController();
+        FxmlController controller = loader.getController();
         controller.setApp(this);
 
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
-        this.primaryStage.setResizable(false);
+        primaryStage.setResizable(false);
     }
 
     public static void main(String[] args) {

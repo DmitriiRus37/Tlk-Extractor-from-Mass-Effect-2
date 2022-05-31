@@ -18,7 +18,7 @@ import java.io.IOException;
 
 @NoArgsConstructor
 @Getter @Setter
-public class FxmlControllerTlkToXml {
+public class FxmlController {
 
     public File inputTlkFile;
     public File outputXmlFile;
@@ -34,6 +34,9 @@ public class FxmlControllerTlkToXml {
     private TextField textFieldInputPathTlkToXml;
     @FXML
     private TextField textFieldIOutputPathTlkToXml;
+
+    @FXML
+    private TextField statusTlkToXml;
     @FXML
     private TextField textFieldStatusTlkToXml;
     @FXML
@@ -66,10 +69,12 @@ public class FxmlControllerTlkToXml {
 
     @FXML
     private void startExportTlkToXml() throws IOException, XMLStreamException {
+        statusTlkToXml.setText("in progress");
         progressBarTlkToXml.setProgress(0.0);
         TlkFile tf = new TlkFile();
         tf.loadTlkData(textFieldInputPathTlkToXml.getText(), true);
         tf.storeToFile(textFieldIOutputPathTlkToXml.getText(), FileFormat.XML, this);
+        statusTlkToXml.setText("DONE");
     }
 
     public File inputXmlFile;
@@ -87,6 +92,9 @@ public class FxmlControllerTlkToXml {
     private TextField textFieldIOutputPathXmlToTlk;
     @FXML
     private TextField textFieldStatusXmlToTlk;
+
+    @FXML
+    private TextField statusXmlToTlk;
     @FXML
     public ProgressBar progressBarXmlToTlk;
     boolean textFieldOutputChosenXmlToTlk = false;
@@ -113,10 +121,12 @@ public class FxmlControllerTlkToXml {
 
     @FXML
     private void startExportXmlToTlk() throws IOException, ParserConfigurationException, SAXException {
+        statusXmlToTlk.setText("in progress");
         progressBarXmlToTlk.setProgress(0.0);
         HuffmanCompression hc = new HuffmanCompression();
         hc.loadInputData(textFieldInputPathXmlToTlk.getText(), FileFormat.XML, true);
         hc.saveToTlkFile(textFieldIOutputPathXmlToTlk.getText(), true);
+        statusXmlToTlk.setText("DONE");
     }
 
 }

@@ -13,10 +13,10 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="246.0" prefWidth="677.0">
                      <children>
-                        <TextField layoutX="200.0" layoutY="20.0" prefHeight="30.0" prefWidth="330.0" promptText="Input path" />
+                        <TextField fx:id="textFieldInputPath" layoutX="200.0" layoutY="20.0" prefHeight="30.0" prefWidth="330.0" promptText="Input path" />
                         <Label layoutX="38.0" layoutY="25.0" prefHeight="20.0" prefWidth="120.0" text="Select Input file" textAlignment="CENTER" />
                         <Label layoutX="38.0" layoutY="70.0" prefHeight="20.0" prefWidth="120.0" text="Select Output file" />
-                        <TextField layoutX="200.0" layoutY="65.0" prefHeight="30.0" prefWidth="330.0" promptText="Output path" />
+                        <TextField fx:id="textFieldIOutputPath" layoutX="200.0" layoutY="65.0" prefHeight="30.0" prefWidth="330.0" promptText="Output path" />
                         <ProgressBar layoutX="201.0" layoutY="156.0" prefHeight="18.0" prefWidth="439.0" progress="0.0" />
                         <Label layoutX="38.0" layoutY="156.0" text="PROGRESS:"/>
                         <Label layoutX="38.0" layoutY="194.0" text="STATUS:"/>

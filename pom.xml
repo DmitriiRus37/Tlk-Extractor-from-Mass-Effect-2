@@ -26,7 +26,6 @@
             <version>1.18.24</version>
         </dependency>
 
-
         <dependency>
             <groupId>io.sarl</groupId>
             <artifactId>io.sarl.javafx</artifactId>
@@ -37,6 +36,12 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>18.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
         </dependency>
     </dependencies>
 </project>

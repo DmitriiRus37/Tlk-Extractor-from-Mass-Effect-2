@@ -71,4 +71,8 @@ public final class PositionInputStream extends FilterInputStream {
         pos = mark;
     }
 
+    public void skipNBytes(int count) {
+
+    }
+
 }

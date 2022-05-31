@@ -1,3 +1,3 @@
-/target/
-backend.iml
-/.idea/
+/.idea/*
+/target/*
+tlk-extractor.iml

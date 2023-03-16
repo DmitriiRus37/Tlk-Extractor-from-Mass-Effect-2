@@ -1,0 +1,155 @@
+import os
+
+import bit_array
+import bit_convertor
+import huffman_node
+import tlk_header
+import input_stream
+import tlk_string_ref
+import wrap
+from xml.etree import ElementTree as ET
+
+
+class TlkFile:
+    def __init__(self):
+        self.header = None
+        self.string_refs = []
+        self.character_tree = []
+        self.bits = []
+
+    def get_string(self, bit_offset_wrap):
+        root = self.character_tree[0]
+        cur_node = root
+        cur_string = ''
+
+        i = bit_offset_wrap.value
+        while i < self.bits.length:
+            if self.bits.get_rev(i):
+                next_node_id = cur_node.right_node_id
+            else:
+                next_node_id = cur_node.left_node_id
+
+            if next_node_id >= 0:
+                cur_node = self.character_tree[next_node_id]
+            else:
+                c = chr(0)
+                try:
+                    c = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_value(0xffff - next_node_id), 0)
+                except:
+                    raise Exception
+                if c != '\0':
+                    cur_string += c
+                    cur_node = root
+                else:
+                    i += 1
+                    bit_offset_wrap.value = i
+                    return cur_string
+            i +=1
+        i += 1
+        bit_offset_wrap.value = i
+        return None
+
+    def load_tlk_data(self, source_path):
+        in_stream = input_stream.InputStream(source_path)
+        self.header = tlk_header.TlkHeader(in_stream)
+
+        if self.header.magic == 1416391424:
+            raise Exception('header.magic == 1416391424')
+        if self.header.magic != 7040084:
+            raise Exception('header.magic != 7040084')
+
+        pos = in_stream.pos
+        r = input_stream.InputStream(pos, source_path)
+        r.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
+
+        for i in range(self.header.tree_node_count):
+            h_node = huffman_node.HuffmanNode(r)
+            self.character_tree += [h_node]
+
+        data_length = self.header.data_len
+        data = [None] * data_length
+        r.read_to_array(data, 0, data_length)
+        self.bits = bit_array.BitArray(a=data)
+
+        r = input_stream.InputStream(pos, source_path)
+
+        raw_strings = {}
+        offset = 0
+        offset_wrap = wrap.Wrap(offset)
+
+        while offset_wrap.value < self.bits.length:
+            key = offset_wrap.value
+            s = self.get_string(offset_wrap)
+            raw_strings[key] = s
+
+        for i in range(self.header.entry_1_count + self.header.entry_2_count):
+            s_ref = tlk_string_ref.TlkStringRef(r)
+            s_ref.position = i
+            if s_ref.bit_offset >= 0:
+                if s_ref.bit_offset in raw_strings.keys():
+                    s_ref.data = raw_strings[s_ref.bit_offset]
+                else:
+                    wr = wrap.Wrap(s_ref.bit_offset)
+                    s_ref.data = self.get_string(wr)
+            self.string_refs.append(s_ref)
+
+    def store_to_file(self, dest_file, file_format):
+        if os.path.isfile(dest_file):
+            os.remove(dest_file)
+        if file_format == 'xml':
+            self.save_to_xml_file(dest_file)
+        #             pretty_xml(dest_file)
+        else:
+            # save_to_text_file(dest_file)
+            pass
+
+    def save_to_xml_file(self, abs_path):
+        # doc = ET.fromstring("<test>test öäü</test>")
+
+        root = ET.Element("tlkFile")
+        root.set('TLKToolVersion', '1.0.4')
+        comment = ET.Comment(
+            "Male entries section begin (ends at position {0})".format((str(self.header.entry_1_count - 1))))
+        root.append(comment)
+
+        s = ET.SubElement(root, 'string')
+
+        s1 = ET.SubElement(s, 'id')
+        s1.text = 'test_id111'
+
+        s2 = ET.SubElement(s, 'position')
+        s2.text = 'test_id222'
+
+        s3 = ET.SubElement(s, 'data')
+        s3.text = 'test_id333'
+
+        tree = ET.ElementTree(root)
+        tree.write("test.xml", encoding="utf-8")
+        return
+
+
+        for i in range(len(self.string_refs)):
+            s = self.string_refs[i]
+            if s.position == self.header.entry_1_count:
+                comment = ET.Comment("Male entries section end")
+                comment = ET.Comment("Female entries section begin (ends at position {0})".format(
+                    str(self.header.entry_1_count + self.header.entry_2_count - 1)))
+
+
+
+
+            b2 = ET.SubElement(m1, 'position')
+            b2.text = s.position
+
+            c2 = ET.SubElement(m1, 'data')
+            if s.bit_offset < 0:
+                c2.text = '-1'
+            else:
+                c2.text = s.data
+            comment = ET.Comment("Female entries section end")
+        # root.write(abs_path)
+        tree = ET.ElementTree(root)
+        # tree.write(abs_path, encoding="utf-8")
+        tree.write(open(abs_path, 'w'))
+        # ET.dump(root)
+

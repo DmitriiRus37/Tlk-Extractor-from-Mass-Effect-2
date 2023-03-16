@@ -24,10 +24,7 @@ class TlkFile:
 
         i = bit_offset_wrap.value
         while i < self.bits.length:
-            if self.bits.get_rev(i):
-                next_node_id = cur_node.right_node_id
-            else:
-                next_node_id = cur_node.left_node_id
+            next_node_id = cur_node.right_node_id if self.bits.get_rev(i) else cur_node.left_node_id
 
             if next_node_id >= 0:
                 cur_node = self.character_tree[next_node_id]
@@ -86,11 +83,9 @@ class TlkFile:
             s_ref = tlk_string_ref.TlkStringRef(r)
             s_ref.position = i
             if s_ref.bit_offset >= 0:
-                if s_ref.bit_offset in raw_strings.keys():
-                    s_ref.data = raw_strings[s_ref.bit_offset]
-                else:
-                    wr = wrap.Wrap(s_ref.bit_offset)
-                    s_ref.data = self.get_string(wr)
+                s_ref.data = raw_strings[s_ref.bit_offset] \
+                    if s_ref.bit_offset in raw_strings.keys() \
+                    else self.get_string(wrap.Wrap(s_ref.bit_offset))
             self.string_refs.append(s_ref)
 
     def store_to_file(self, dest_file, file_format):
@@ -130,10 +125,7 @@ class TlkFile:
             s2.text = str(sr.position)
 
             s3 = ET.SubElement(s, 'data')
-            if sr.bit_offset < 0:
-                s3.text = '-1'
-            else:
-                s3.text = sr.data
+            s3.text = '-1' if sr.bit_offset < 0 else sr.data
         comment = ET.Comment("Female entries section end")
         root.append(comment)
 

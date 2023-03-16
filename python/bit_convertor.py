@@ -26,14 +26,10 @@ def to_int_64(bytes, index):
 def get_bytes_by_value(value):
     b = format(value, '32b').replace(' ', '0')
     byte_1 = int(b[:8], 2)
-    byte_2 =int(b[8:16], 2)
-    byte_3 =int(b[16:24], 2)
-    byte_4 =int(b[24:], 2)
+    byte_2 = int(b[8:16], 2)
+    byte_3 = int(b[16:24], 2)
+    byte_4 = int(b[24:], 2)
     return [byte_4, byte_3, byte_2, byte_1]
-
-    # buffer = PyByteBuffer.ByteBuffer.allocate(4)
-    # buffer.put(value)
-    # return buffer.array()
 
 
 def to_char_rev(bytes, index):
@@ -47,7 +43,7 @@ def to_char_rev(bytes, index):
         c = (((bytes[bpos] & 0x00FF) << 8) + (bytes[bpos + 1] & 0x00FF))
         buffer[i] = chr(c)
     count_of_chars = len(buffer)
-    return buffer[count_of_chars-1-index]
+    return buffer[count_of_chars - 1 - index]
 
 
 def get_bytes(x):
@@ -55,4 +51,3 @@ def get_bytes(x):
         return [x >> 24, x >> 16, x >> 8, x]
     elif isinstance(x, long):
         return [x >> 56, x >> 48, x >> 40, x >> 32, x >> 24, x >> 16, x >> 8, x]
-

@@ -322,7 +322,7 @@ public class TlkFile  {
         if ((ch1 | ch2 | ch3 | ch4) < 0) {
             throw new EOFException();
         }
-        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1));
+        return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + ch1;
     }
 
     public static PositionInputStream baseStreamSeek(long pos, String fileName) throws IOException {

@@ -12,7 +12,7 @@ class InputStream:
             self.pos = args[0]
 
     def read_to_array(self, b, off, length):
-        if b == None:
+        if b is None:
             raise Exception('b == None')
         elif off < 0 or length < 0 or length > len(b) - off:
             raise Exception('off < 0 or len < 0 or len > len(b) - off')
@@ -33,7 +33,7 @@ class InputStream:
                 b[off + i] = c
                 counter += 1
         except:
-            Exception('')
+            Exception('exception')
         return counter
 
 

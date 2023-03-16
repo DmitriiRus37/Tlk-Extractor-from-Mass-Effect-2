@@ -1,6 +1,3 @@
-import PyByteBuffer
-
-
 def to_int_32(bytes, index):
     if len(bytes) != 4:
         raise Exception('The length of the byte array must be at least 4 bytes long.')

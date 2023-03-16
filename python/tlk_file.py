@@ -106,50 +106,36 @@ class TlkFile:
     def save_to_xml_file(self, abs_path):
         # doc = ET.fromstring("<test>test öäü</test>")
 
-        root = ET.Element("tlkFile")
-        root.set('TLKToolVersion', '1.0.4')
+        root = ET.Element('tlkFile')
+        root.set("TLKToolVersion", '1.0.4')
         comment = ET.Comment(
-            "Male entries section begin (ends at position {0})".format((str(self.header.entry_1_count - 1))))
+            'Male entries section begin (ends at position {0})'.format((str(self.header.entry_1_count - 1))))
         root.append(comment)
 
-        s = ET.SubElement(root, 'string')
+        for i in range(len(self.string_refs)):
+            sr = self.string_refs[i]
 
-        s1 = ET.SubElement(s, 'id')
-        s1.text = 'test_id111'
+            if sr.position == self.header.entry_1_count:
+                comment1 = ET.Comment('Male entries section end')
+                comment2 = ET.Comment('Female entries section begin (ends at position {0})'.format((str(self.header.entry_1_count + self.header.entry_2_count - 1))))
+                root.append(comment1)
+                root.append(comment2)
 
-        s2 = ET.SubElement(s, 'position')
-        s2.text = 'test_id222'
+            s = ET.SubElement(root, 'string')
 
-        s3 = ET.SubElement(s, 'data')
-        s3.text = 'test_id333'
+            s1 = ET.SubElement(s, 'id')
+            s1.text = str(sr.string_id)
+
+            s2 = ET.SubElement(s, 'position')
+            s2.text = str(sr.position)
+
+            s3 = ET.SubElement(s, 'data')
+            if sr.bit_offset < 0:
+                s3.text = '-1'
+            else:
+                s3.text = sr.data
+        comment = ET.Comment("Female entries section end")
+        root.append(comment)
 
         tree = ET.ElementTree(root)
         tree.write("test.xml", encoding="utf-8")
-        return
-
-
-        for i in range(len(self.string_refs)):
-            s = self.string_refs[i]
-            if s.position == self.header.entry_1_count:
-                comment = ET.Comment("Male entries section end")
-                comment = ET.Comment("Female entries section begin (ends at position {0})".format(
-                    str(self.header.entry_1_count + self.header.entry_2_count - 1)))
-
-
-
-
-            b2 = ET.SubElement(m1, 'position')
-            b2.text = s.position
-
-            c2 = ET.SubElement(m1, 'data')
-            if s.bit_offset < 0:
-                c2.text = '-1'
-            else:
-                c2.text = s.data
-            comment = ET.Comment("Female entries section end")
-        # root.write(abs_path)
-        tree = ET.ElementTree(root)
-        # tree.write(abs_path, encoding="utf-8")
-        tree.write(open(abs_path, 'w'))
-        # ET.dump(root)
-

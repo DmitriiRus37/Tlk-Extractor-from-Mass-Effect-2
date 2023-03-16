@@ -138,4 +138,5 @@ class TlkFile:
         root.append(comment)
 
         tree = ET.ElementTree(root)
-        tree.write("test.xml", encoding="utf-8")
+        ET.indent(tree, space="\t", level=0)
+        tree.write(abs_path, encoding="utf-8")

@@ -34,7 +34,6 @@ class HuffmanCompression:
         # build_huffman_tree()
         # build_coding_array()
 
-
     # Loads data from XML file into memory
     def load_xml_input_data(self, file_name: str):
         tree = ET.parse(file_name)

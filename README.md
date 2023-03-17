@@ -11,3 +11,6 @@ What is the reason of transforming TLK to XML? Because TLK-file is a non-editabl
 
 ### Using Python:
 `python3 (to_xml | to_txt) source_path dest_path`
+
+for example:
+`python3.11  ./python_ver/main.py to_xml ./files/BIOGame_RUS.tlk ./files/test1.xml`

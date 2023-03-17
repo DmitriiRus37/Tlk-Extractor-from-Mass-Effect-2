@@ -53,14 +53,14 @@ class TlkFile:
         # -- load TLK file header --
         # reading first 28(4 * 7) bytes
 
-        # using LittleEndian for PC architecture and BigEndian for Xbox360 */
+        # using LittleEndian for PC architecture and BigEndian for Xbox360
         input_s = input_stream.InputStream(source_path)
         self.header = tlk_header.TlkHeader(input_s)
 
-        # read possibly correct ME2 TLK file, but from another platfrom */
+        # read possibly correct ME2 TLK file, but from another platfrom
         if self.header.magic == 1416391424:
             raise Exception('header.magic == 1416391424')
-        # read definitely NOT a ME2 TLK ile */
+        # read definitely NOT a ME2 TLK ile
         if self.header.magic != 7040084:
             raise Exception('header.magic != 7040084')
 
@@ -126,7 +126,7 @@ class TlkFile:
                     else self.get_string(offset_wrap.OffsetWrap(s_ref.bit_offset))
             self.string_refs.append(s_ref)
 
-    def store_to_file(self, dest_file, file_format):
+    def store_to_file(self, dest_file: str, file_format: str):
         if os.path.isfile(dest_file):
             os.remove(dest_file)
         if file_format.lower() == 'to_xml':
@@ -138,8 +138,6 @@ class TlkFile:
 
     # Writing data in an XML format.
     def save_to_xml_file(self, abs_path):
-        # doc = ET.fromstring("<test>test öäü</test>")
-
         root = ET.Element('tlkFile')  # <tlkFile> tag
         root.set("TLKToolVersion", '1.0.4')  # <tlkFile> attributes
         comment = ET.Comment('Male entries section begin (ends at position {0})'.format(

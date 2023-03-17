@@ -56,20 +56,18 @@ class TlkFile:
             raise Exception('header.magic != 7040084')
 
         pos = input_s.pos
-        r = input_stream.InputStream(pos, source_path)
-        r.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
+        input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
 
         for i in range(self.header.tree_node_count):
-            h_node = huffman_node.HuffmanNode(r)
+            h_node = huffman_node.HuffmanNode(input_s)
             self.character_tree += [h_node]
 
         data_length = self.header.data_len
         data = [None] * data_length
-        r.read_to_array(data, 0, data_length)
+        input_s.read_to_array(data, 0, data_length)
         self.bits = bit_array.BitArray(a=data)
 
-        r = input_stream.InputStream(pos, source_path)
-
+        input_s.pos = pos
         raw_strings = {}
         offset = 0
         offset_wrap = wrap.Wrap(offset)
@@ -80,7 +78,7 @@ class TlkFile:
             raw_strings[key] = s
 
         for i in range(self.header.entry_1_count + self.header.entry_2_count):
-            s_ref = tlk_string_ref.TlkStringRef(r)
+            s_ref = tlk_string_ref.TlkStringRef(input_s)
             s_ref.position = i
             if s_ref.bit_offset >= 0:
                 s_ref.data = raw_strings[s_ref.bit_offset] \

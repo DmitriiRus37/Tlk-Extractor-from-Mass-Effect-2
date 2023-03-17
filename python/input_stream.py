@@ -11,10 +11,10 @@ class InputStream:
                 self.bytes = tuple(bytes_read)
             self.pos = args[0]
 
-    def read_to_array(self, b, off, length):
-        if b is None:
+    def read_to_array(self, arr, off, length):
+        if arr is None:
             raise Exception('b == None')
-        elif off < 0 or length < 0 or length > len(b) - off:
+        elif off < 0 or length < 0 or length > len(arr) - off:
             raise Exception('off < 0 or len < 0 or len > len(b) - off')
         elif length == 0:
             return 0
@@ -22,7 +22,7 @@ class InputStream:
         c = read_byte(self)
         if c == -1:
             return -1
-        b[off] = c
+        arr[off] = c
 
         counter = 1
         try:
@@ -30,7 +30,7 @@ class InputStream:
                 c = read_byte(self)
                 if c == -1:
                     break
-                b[off + i] = c
+                arr[off + i] = c
                 counter += 1
         except:
             Exception('exception')

@@ -6,7 +6,7 @@ import huffman_node
 import tlk_header
 import input_stream
 import tlk_string_ref
-import wrap
+from python import offset_wrap
 from xml.etree import ElementTree as ET
 
 
@@ -15,11 +15,11 @@ class TlkFile:
         self.header = None
         self.string_refs = []
         self.character_tree = []
-        self.bits = []
+        self.bits = bit_array.BitArray()
 
     def get_string(self, bit_offset_wrap):
-        root = self.character_tree[0]
-        cur_node = root
+        root_node = self.character_tree[0]
+        cur_node = root_node
         cur_string = ''
 
         i = bit_offset_wrap.value
@@ -29,14 +29,14 @@ class TlkFile:
             if next_node_id >= 0:
                 cur_node = self.character_tree[next_node_id]
             else:
-                c = chr(0)
+                char = chr(0)
                 try:
-                    c = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_value(0xffff - next_node_id), 0)
+                    char = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_value(0xffff - next_node_id), 0)
                 except:
                     raise Exception
-                if c != '\0':
-                    cur_string += c
-                    cur_node = root
+                if char != '\0':
+                    cur_string += char
+                    cur_node = root_node
                 else:
                     i += 1
                     bit_offset_wrap.value = i
@@ -72,7 +72,7 @@ class TlkFile:
 
         for i in range(self.header.tree_node_count):
             h_node = huffman_node.HuffmanNode(input_s)
-            self.character_tree += [h_node]
+            self.character_tree.append(h_node)
 
         # / ****************** STEP THREE ****************
         # -- read all of coded data into memory --
@@ -87,19 +87,18 @@ class TlkFile:
         input_s.pos = pos
 
         # ****************** STEP FOUR ****************
-        # -- decode(basing on Huffman Tree) raw bits data into actual strings --
+        # -- decode (basing on Huffman Tree) raw bits data into actual strings --
         # and store them in a Dictionary <int,string> where:
         # int: bit offset of the beginning of data
         # (offset starting at 0 and counted for Bits array)
         # so offset == 0 means the first bit in Bits array
         # string: actual decoded String
         raw_str = {}
-        offset = 0
-        offset_wrap = wrap.Wrap(offset)
+        offset = offset_wrap.OffsetWrap(0)  # just a wrapper of bits offset
 
-        while offset_wrap.value < self.bits.length:
-            key = offset_wrap.value
-            s = self.get_string(offset_wrap)
+        while offset.value < self.bits.length:
+            key = offset.value
+            s = self.get_string(offset)
             raw_str[key] = s
 
         # **************** STEP FIVE ****************
@@ -123,7 +122,7 @@ class TlkFile:
                 # s_ref.Data = fullString;
                 s_ref.data = raw_str[s_ref.bit_offset] \
                     if s_ref.bit_offset in raw_str.keys() \
-                    else self.get_string(wrap.Wrap(s_ref.bit_offset))
+                    else self.get_string(offset_wrap.OffsetWrap(s_ref.bit_offset))
             self.string_refs.append(s_ref)
 
     def store_to_file(self, dest_file, file_format):

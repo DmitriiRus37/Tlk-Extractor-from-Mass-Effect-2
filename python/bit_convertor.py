@@ -1,3 +1,6 @@
+# A packed array of booleans.
+# @author kiwimoosical
+# @link https://www.se7ensins.com/forums/threads/java-c-s-bitconverter-in-java.486271/
 def to_int_32(bytes: list, index: int):
     if len(bytes) != 4:
         raise Exception('The length of the byte array must be at least 4 bytes long.')
@@ -32,19 +35,23 @@ def get_bytes_by_value(value: int) -> list:
 def to_char_rev(bytes: list, index: int):
     if len(bytes) < 2:
         raise Exception('The length of the byte array must be at least 2 bytes long.')
-    buffer = [None] * (len(bytes) // 2)
     for i in range(len(bytes) // 2):
         bytes[i], bytes[len(bytes) - 1 - i] = bytes[len(bytes) - 1 - i], bytes[i]
+
+    buffer = [None] * (len(bytes) // 2)
     for i in range(len(buffer)):
-        bpos = i << 1
-        c = (((bytes[bpos] & 0x00FF) << 8) + (bytes[bpos + 1] & 0x00FF))
+        bpos = i << 1  # left shift
+        byte_1 = bytes[bpos] & 0x00FF
+        byte_2 = bytes[bpos + 1] & 0x00FF
+        c = (byte_1 << 8) + byte_2
         buffer[i] = chr(c)
     count_of_chars = len(buffer)
     return buffer[count_of_chars - 1 - index]
 
 
 def get_bytes(x) -> list:
-    if isinstance(x, int):
-        return [x >> 24, x >> 16, x >> 8, x]
-    elif isinstance(x, long):
-        return [x >> 56, x >> 48, x >> 40, x >> 32, x >> 24, x >> 16, x >> 8, x]
+    return [x >> 24, x >> 16, x >> 8, x]
+    # if isinstance(x, int):
+    #     return [x >> 24, x >> 16, x >> 8, x]
+    # elif isinstance(x, long):
+    #     return [x >> 56, x >> 48, x >> 40, x >> 32, x >> 24, x >> 16, x >> 8, x]

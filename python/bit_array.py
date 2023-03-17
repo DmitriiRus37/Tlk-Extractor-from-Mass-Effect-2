@@ -71,7 +71,7 @@ class BitArray:
     def get_rev(self, index) -> bool:
         if index < 0 or index >= self.length:
             raise Exception('index < 0 or index >= self.length')
-        bit_array = [None] * 8
+        bit_array = [False] * 8
         for i in range(8):
             bit_array[8 - 1 - i] = (self.repn[subscript(index)] >> i & 0x1) != 0x0
         return get_bit(bit_array, index, 'little_endian')

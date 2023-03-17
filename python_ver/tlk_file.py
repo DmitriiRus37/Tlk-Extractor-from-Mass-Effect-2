@@ -6,7 +6,8 @@ import huffman_node
 import tlk_header
 import input_stream
 import tlk_string_ref
-from python import offset_wrap
+import offset_wrap
+
 from xml.etree import ElementTree as ET
 
 
@@ -128,12 +129,12 @@ class TlkFile:
     def store_to_file(self, dest_file, file_format):
         if os.path.isfile(dest_file):
             os.remove(dest_file)
-        if file_format == 'xml':
+        if file_format.lower() == 'to_xml':
+            print(file_format + ' XML')
             self.save_to_xml_file(dest_file)
-        #             pretty_xml(dest_file)
         else:
-            # save_to_text_file(dest_file)
-            pass
+            print(file_format + ' TXT')
+            self.save_to_text_file(dest_file)
 
     # Writing data in an XML format.
     def save_to_xml_file(self, abs_path):
@@ -171,3 +172,12 @@ class TlkFile:
         tree = ET.ElementTree(root)
         ET.indent(tree, space="\t", level=0)
         tree.write(abs_path, encoding="utf-8")
+
+    def save_to_text_file(self, dest_file):
+        total_count = len(self.string_refs)
+
+        with open(dest_file, "w+") as f:
+            for i in range(total_count):
+                s = self.string_refs[i]
+                line = str(s.string_id) + ': ' + str(s.data) + '\r\n'
+                f.write(line)

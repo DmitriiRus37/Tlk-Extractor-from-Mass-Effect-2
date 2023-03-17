@@ -32,17 +32,19 @@ def get_bytes_by_value(value: int) -> list:
     return [byte_4, byte_3, byte_2, byte_1]
 
 
-def to_char_rev(bytes: list, index: int):
-    if len(bytes) < 2:
+def to_char_rev(bytes_list: list, index: int):
+    if len(bytes_list) < 2:
         raise Exception('The length of the byte array must be at least 2 bytes long.')
-    for i in range(len(bytes) // 2):
-        bytes[i], bytes[len(bytes) - 1 - i] = bytes[len(bytes) - 1 - i], bytes[i]
+    for i in range(len(bytes_list) // 2):
+        bytes_list[i], bytes_list[len(bytes_list) - 1 - i] = bytes_list[len(bytes_list) - 1 - i], bytes_list[i]
 
-    buffer = [None] * (len(bytes) // 2)
+    buffer = [None] * (len(bytes_list) // 2)
     for i in range(len(buffer)):
-        bpos = i << 1  # left shift
-        byte_1 = bytes[bpos] & 0x00FF
-        byte_2 = bytes[bpos + 1] & 0x00FF
+        byte_pos = i << 1  # left shift to increase 'i' to power of 2 (multiply by 2)
+        byte_1 = bytes_list[byte_pos]
+        byte_2 = bytes_list[byte_pos + 1]
+
+        # left shift to paste byte_2 instead of byte_1
         c = (byte_1 << 8) + byte_2
         buffer[i] = chr(c)
     count_of_chars = len(buffer)

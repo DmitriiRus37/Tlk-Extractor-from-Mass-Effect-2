@@ -1,4 +1,4 @@
-def to_int_32(bytes, index):
+def to_int_32(bytes: list, index: int):
     if len(bytes) != 4:
         raise Exception('The length of the byte array must be at least 4 bytes long.')
     return (0xff & bytes[index]) << 24 | \
@@ -7,7 +7,7 @@ def to_int_32(bytes, index):
         (0xff & bytes[index + 3])
 
 
-def to_int_64(bytes, index):
+def to_int_64(bytes: list, index: int):
     if len(bytes) != 4:
         raise Exception('The length of the byte array must be at least 8 bytes long.')
     return (0xff & bytes[index]) << 56 | \
@@ -20,7 +20,7 @@ def to_int_64(bytes, index):
         (0xff & bytes[index + 7])
 
 
-def get_bytes_by_value(value):
+def get_bytes_by_value(value: int) -> list:
     b = format(value, '32b').replace(' ', '0')
     byte_1 = int(b[:8], 2)
     byte_2 = int(b[8:16], 2)
@@ -29,7 +29,7 @@ def get_bytes_by_value(value):
     return [byte_4, byte_3, byte_2, byte_1]
 
 
-def to_char_rev(bytes, index):
+def to_char_rev(bytes: list, index: int):
     if len(bytes) < 2:
         raise Exception('The length of the byte array must be at least 2 bytes long.')
     buffer = [None] * (len(bytes) // 2)
@@ -43,7 +43,7 @@ def to_char_rev(bytes, index):
     return buffer[count_of_chars - 1 - index]
 
 
-def get_bytes(x):
+def get_bytes(x) -> list:
     if isinstance(x, int):
         return [x >> 24, x >> 16, x >> 8, x]
     elif isinstance(x, long):

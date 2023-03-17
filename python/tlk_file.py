@@ -47,15 +47,15 @@ class TlkFile:
         return None
 
     def load_tlk_data(self, source_path):
-        in_stream = input_stream.InputStream(source_path)
-        self.header = tlk_header.TlkHeader(in_stream)
+        input_s = input_stream.InputStream(source_path)
+        self.header = tlk_header.TlkHeader(input_s)
 
         if self.header.magic == 1416391424:
             raise Exception('header.magic == 1416391424')
         if self.header.magic != 7040084:
             raise Exception('header.magic != 7040084')
 
-        pos = in_stream.pos
+        pos = input_s.pos
         r = input_stream.InputStream(pos, source_path)
         r.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
 

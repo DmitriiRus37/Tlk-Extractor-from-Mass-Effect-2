@@ -1,8 +1,11 @@
+import os
 from xml.etree import ElementTree as ET
 
 from python_ver import bit_array
+from collections import deque
 
 
+bits_per_byte = 8
 class HuffmanCompression:
     def __init__(self):
         self.input_file_version = '1.0.0.0'
@@ -10,6 +13,144 @@ class HuffmanCompression:
         self.frequency_count = {}
         self.huffman_tree = []
         self.huffman_codes = {}
+
+    # Converts a Huffman Tree to it's binary representation used by TLK format of Mass Effect 2.
+    def convert_huffman_tree_to_buffer(self):
+        q = deque()
+        indices = {}
+
+        index = 0
+        q.append(self.huffman_tree[0])
+
+        while len(q) > 0:
+            node = q.popleft()
+            # if it's a leaf - set it's ID to reflect char data the node contains
+            if node.left == node.right:
+                # store the char data
+                node.id = -1 - node.letter
+                # that's how it's going to be decoded when parsing TLK file:
+                # char c = ru.BitConverter.ToChar(ru.BitConverter.GetBytes(0xffff - node.ID), 0);
+            else:
+                node.id = index
+                index += 1
+                indices[node.id] = node
+            if node.right is not None:
+                q.append(node.right)
+            if node.left is not None:
+                q.append(node.left)
+        output = []
+        for node in indices.values():
+            output.append(node.left.id)
+            output.append(node.right.id)
+        return output
+
+    # Dumps data from memory to TLK compressed file format.
+    # Compressed data should be read into memory first, by LoadInputData method.
+    def save_to_tlk_file(self, dest_file: str):
+        if os.path.isfile(dest_file):
+            os.remove(dest_file)
+        # converts Huffmann Tree to binary form
+        tree_buffer = self.convert_huffman_tree_to_buffer()
+
+        # preparing data and entries for writing to file;
+        # entries list consists of pairs <string_id, offset>
+        binary_data = []
+        entries1 = {}
+        entries2 = {}
+        offset = 0
+
+        for entry in self.input_data:
+            str_id = entry.string_id
+            if str_id < 0:
+                if str_id not in entries1:
+                    entries1[str_id] = int(entry.data)
+                else:
+                    entries2[str_id] = int(entry.data)
+                continue
+
+            if str_id not in entries1:
+                entries1[str_id] = offset
+            else:
+                entries2[str_id] = offset
+
+            # for every character in a string, put it's binary code into data array
+            for ch in list(entry.data):
+                binary_data.append(self.huffman_codes[ch])
+                offset += len(self.huffman_codes[ch])
+
+        # preparing TLK Header
+        magic = 7040084
+        ver = 3
+        min_ver = 2
+        entry_1_count = len(entries1)
+        entry_2_count = len(entries2)
+        tree_node_count = len(tree_buffer) // 2
+        data_length = offset // 8
+        if offset % 8 > 0:
+            data_length += 1
+
+        # writing TLK Header
+        with open(dest_file, "w+") as f:
+            f.write(str(magic))
+            f.write(str(ver))
+            f.write(str(min_ver))
+            f.write(str(entry_1_count))
+            f.write(str(entry_2_count))
+            f.write(str(tree_node_count))
+            f.write(str(data_length))
+
+            # writing entries
+            for k, v in entries1.items():
+                f.write(k)
+                f.write(v)
+            for k, v in entries2.items():
+                f.write(k)
+                f.write(v)
+
+            # writing HuffmanTree
+            for el in tree_buffer:
+                f.write(el)
+
+            # writing data
+            data = self.BitArrayListToByteArray(binary_data, offset)
+            f.write(data)
+
+    def BitArrayListToByteArray(self, bits_list, bits_count):
+        byte_size = bits_count // bits_per_byte
+
+        if bits_count % bits_per_byte > 0:
+            byte_size += 1
+
+        bytes = [0] * byte_size
+        byte_pos = 0
+        bits_read = 0
+        value = 0
+        significance = 1
+
+        for bits in bits_list:
+            bit_pos = 0
+
+            while bit_pos < len(bits):
+                if bits[bit_pos]:
+                    value += significance
+                bit_pos += 1
+                bits_read += 1
+
+                if bits_read % bits_per_byte == 0:
+                    bytes[byte_pos] = value
+                    byte_pos += 1
+                    value = 0
+                    significance = 0
+                    bits_read = 0
+                else:
+                    significance = significance << 1
+        if bits_read % bits_per_byte != 0:
+            bytes[byte_pos] = value
+        return bytes
+
+
+
+
 
     # Loads a file into memory and prepares for compressing it to TLK
     def load_input_data(self, file_name: str, ff: str):
@@ -47,19 +188,19 @@ class HuffmanCompression:
     def traverse_huffman_tree(self, node, code):
         # check if both sons are None
         if node.left == node.right:
-            arr = []
-            for i in range(len(code)):
-                arr.append(code[i])
-            ba = bit_array.BitArray(bits=arr)
-            self.huffman_codes[node.letter] = ba
+            # arr = []
+            # for i in range(len(code)):
+            #     arr.append(code[i])
+            # ba = bit_array.BitArray(bits=arr)
+            self.huffman_codes[node.letter] = ''.join(code)
         else:
             # adds 0 to the code - process left son
-            code.append(False)
+            code.append('0')
             self.traverse_huffman_tree(node.left, code)
             del code[len(code) - 1]
 
             # adds 1 to the code - process right son
-            code.append(True)
+            code.append('1')
             self.traverse_huffman_tree(node.right, code)
             del code[len(code) - 1]
 
@@ -160,6 +301,7 @@ class tlk_entry:
 
 class HuffmanNode:
     def __init__(self, **kwargs):
+        id = None
         if 'd' in kwargs and 'freq' in kwargs:
             self.letter = kwargs['d']
             self.frequency_count = kwargs['freq']

@@ -54,8 +54,7 @@ class BitArray:
             self.length = length
             self.repn = []
         elif 'bits' in kwargs:
-            # Create a bit_array whose bits are those of the given array
-            # of Booleans.
+            # Create a bit_array whose bits are those of the given array of Booleans.
             bits = kwargs['bits']
             self.length = len(bits)
             self.repn = [0] * ((self.length + 7) // 8)

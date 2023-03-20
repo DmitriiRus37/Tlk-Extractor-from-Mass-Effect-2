@@ -11,9 +11,8 @@ def main():
 
     if method.lower() == 'to_tlk':
         hc = huffman_compression.HuffmanCompression()
-        hc.load_input_data(source_path, 'xml');
-        # hc.(textFieldIOutputPathXmlToTlk.getText(), true);
-
+        hc.load_input_data(source_path, 'xml')
+        hc.save_to_tlk_file(dest_path)
     else:
         tlk = tlk_file.TlkFile()
         tlk_file.TlkFile.load_tlk_data(tlk, source_path)

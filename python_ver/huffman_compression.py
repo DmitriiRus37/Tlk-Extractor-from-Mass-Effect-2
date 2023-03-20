@@ -51,7 +51,7 @@ class HuffmanCompression:
             for i in range(len(code)):
                 arr.append(code[i])
             ba = bit_array.BitArray(bits=arr)
-            self.huffman_codes[node.data] = ba
+            self.huffman_codes[node.letter] = ba
         else:
             # adds 0 to the code - process left son
             code.append(False)
@@ -161,7 +161,7 @@ class tlk_entry:
 class HuffmanNode:
     def __init__(self, **kwargs):
         if 'd' in kwargs and 'freq' in kwargs:
-            self.data = kwargs['d']
+            self.letter = kwargs['d']
             self.frequency_count = kwargs['freq']
             self.left = None
             self.right = None

@@ -1,5 +1,7 @@
 from xml.etree import ElementTree as ET
 
+from python_ver import bit_array
+
 
 class HuffmanCompression:
     def __init__(self):
@@ -13,7 +15,8 @@ class HuffmanCompression:
     def load_input_data(self, file_name: str, ff: str):
         self.input_data = []
         self.load_xml_input_data(file_name)
-        sorted(self.input_data, key=lambda tlk_entry: tlk_entry.position)
+        # sorted(self.input_data, key=lambda tlk_entry: tlk_entry.position)
+        self.input_data.sort(key=lambda x: x.position)
         self.prepare_huffman_coding()
 
     def prepare_huffman_coding(self):
@@ -27,12 +30,49 @@ class HuffmanCompression:
                         self.frequency_count[ch] = 0
                     self.frequency_count[ch] = self.frequency_count[ch] + 1
 
+        # here we have frequency of each char at TLK file
         for k, v in self.frequency_count.items():
-            hn = huffman_node(d=k, freq=v)
-            self.huffman_tree.append(hn)
-        # todo
-        # build_huffman_tree()
-        # build_coding_array()
+            self.huffman_tree.append(HuffmanNode(d=k, freq=v))
+        self.build_huffman_tree()
+        self.build_coding_array()
+
+    # Using Huffman Tree (created with build_huffman_tree method), generates a binary code for every character.
+    def build_coding_array(self):
+        # stores a binary code
+        currend_code = []
+        current_node = self.huffman_tree[0]
+        self.traverse_huffman_tree(current_node, currend_code)
+
+    # Recursively traverses Huffman Tree and generates codes
+    def traverse_huffman_tree(self, node, code):
+        # check if both sons are None
+        if node.left == node.right:
+            arr = []
+            for i in range(len(code)):
+                arr.append(code[i])
+            ba = bit_array.BitArray(bits=arr)
+            self.huffman_codes[node.data] = ba
+        else:
+            # adds 0 to the code - process left son
+            code.append(False)
+            self.traverse_huffman_tree(node.left, code)
+            del code[len(code) - 1]
+
+            # adds 1 to the code - process right son
+            code.append(True)
+            self.traverse_huffman_tree(node.right, code)
+            del code[len(code) - 1]
+
+    def build_huffman_tree(self):
+        while len(self.huffman_tree) > 1:
+            # sort Huffman Nodes by frequency
+            # sorted(self.huffman_tree, key=lambda huffman_node: huffman_node.frequency_count)
+            self.huffman_tree.sort(key=lambda x: x.frequency_count)
+
+            parent = HuffmanNode(left=self.huffman_tree[0], right=self.huffman_tree[1])
+            del self.huffman_tree[0]
+            del self.huffman_tree[0]
+            self.huffman_tree.append(parent)
 
     # Loads data from XML file into memory
     def load_xml_input_data(self, file_name: str):
@@ -54,7 +94,6 @@ class HuffmanCompression:
                     position = int(child_node.text)
                 elif child_node.tag == 'data':
                     data = child_node.text
-            # todo check
             if data is not None:
                 data.replace('\r\n', '\n')
 
@@ -119,17 +158,14 @@ class tlk_entry:
         self.data = data
 
 
-class huffman_node:
+class HuffmanNode:
     def __init__(self, **kwargs):
-        left = None
-        right = None
         if 'd' in kwargs and 'freq' in kwargs:
-            d = kwargs['d']
-            freq = kwargs['freq']
-            self.data = d
-            self.frequency_count = freq
-        elif 'left' in kwargs and 'right' in kwargs:
-            left = kwargs['left']
-            right = kwargs['right']
-            self.frequency_count = left.frequency_count + right.frequency_count
             self.data = kwargs['d']
+            self.frequency_count = kwargs['freq']
+            self.left = None
+            self.right = None
+        elif 'left' in kwargs and 'right' in kwargs:
+            self.left = kwargs['left']
+            self.right = kwargs['right']
+            self.frequency_count = self.left.frequency_count + self.right.frequency_count

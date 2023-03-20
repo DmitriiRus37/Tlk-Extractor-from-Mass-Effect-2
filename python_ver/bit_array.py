@@ -58,7 +58,7 @@ class BitArray:
             # of Booleans.
             bits = kwargs['bits']
             self.length = len(bits)
-            self.repn = []
+            self.repn = [0] * ((self.length + 7) // 8)
             for i in range(self.length):
                 self.set_bit(i, bits[i])
         elif 'ba' in kwargs:

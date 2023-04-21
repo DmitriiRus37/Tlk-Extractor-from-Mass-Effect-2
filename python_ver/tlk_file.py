@@ -2,7 +2,7 @@ import os
 
 import bit_array
 import bit_convertor
-import huffman_node
+from huffman_node import HuffmanNode
 import tlk_header
 from input_stream import InputStream
 import tlk_string_ref
@@ -68,11 +68,11 @@ class TlkFile:
         # -- read and store Huffman Tree nodes --
 
         # jumping to the beginning of Huffmann Tree stored in TLK file * /
-        pos = input_s.pos
-        input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
+        pos = input_s.pos  # position after reading of header
+        input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ???
 
         for i in range(self.header.tree_nodes_count):
-            h_node = huffman_node.HuffmanNode(input_s)
+            h_node = HuffmanNode(input_s)
             self.character_tree.append(h_node)
 
         # / ****************** STEP THREE ****************

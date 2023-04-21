@@ -1,11 +1,11 @@
 import os
 from xml.etree import ElementTree as ET
 
-from python_ver import bit_array
 from collections import deque
 
-
 bits_per_byte = 8
+
+
 class HuffmanCompression:
     def __init__(self):
         self.input_file_version = '1.0.0.0'
@@ -148,10 +148,6 @@ class HuffmanCompression:
             bytes[byte_pos] = value
         return bytes
 
-
-
-
-
     # Loads a file into memory and prepares for compressing it to TLK
     def load_input_data(self, file_name: str, ff: str):
         self.input_data = []
@@ -207,7 +203,6 @@ class HuffmanCompression:
     def build_huffman_tree(self):
         while len(self.huffman_tree) > 1:
             # sort Huffman Nodes by frequency
-            # sorted(self.huffman_tree, key=lambda huffman_node: huffman_node.frequency_count)
             self.huffman_tree.sort(key=lambda x: x.frequency_count)
 
             parent = HuffmanNode(left=self.huffman_tree[0], right=self.huffman_tree[1])

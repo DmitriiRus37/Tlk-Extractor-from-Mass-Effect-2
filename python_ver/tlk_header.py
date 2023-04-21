@@ -9,5 +9,5 @@ class TlkHeader:
         self.min_ver = input_stream.read_int_32(in_stream)
         self.entry_1_count = input_stream.read_int_32(in_stream)
         self.entry_2_count = input_stream.read_int_32(in_stream)
-        self.tree_node_count = input_stream.read_int_32(in_stream)
+        self.tree_nodes_count = input_stream.read_int_32(in_stream)  # count of unique symbols
         self.data_len = input_stream.read_int_32(in_stream)

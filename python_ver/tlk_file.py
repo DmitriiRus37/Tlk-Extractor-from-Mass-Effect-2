@@ -4,7 +4,7 @@ import bit_array
 import bit_convertor
 import huffman_node
 import tlk_header
-import input_stream
+from input_stream import InputStream
 import tlk_string_ref
 import offset_wrap
 
@@ -51,10 +51,10 @@ class TlkFile:
     def load_tlk_data(self, source_path):
         # ****************** STEP ONE ****************
         # -- load TLK file header --
-        # reading first 28(4 * 7) bytes
+        # reading first 28(4 * 7) bytes to build Header
 
         # using LittleEndian for PC architecture and BigEndian for Xbox360
-        input_s = input_stream.InputStream(source_path)
+        input_s = InputStream(source_path)
         self.header = tlk_header.TlkHeader(input_s)
 
         # read possibly correct ME2 TLK file, but from another platfrom
@@ -71,7 +71,7 @@ class TlkFile:
         pos = input_s.pos
         input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8
 
-        for i in range(self.header.tree_node_count):
+        for i in range(self.header.tree_nodes_count):
             h_node = huffman_node.HuffmanNode(input_s)
             self.character_tree.append(h_node)
 

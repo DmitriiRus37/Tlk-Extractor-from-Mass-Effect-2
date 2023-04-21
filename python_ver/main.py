@@ -19,4 +19,5 @@ def main():
         tlk_file.TlkFile.store_to_file(tlk, dest_path, method)
 
 
-main()
+if __name__ == "__main__":
+    main()

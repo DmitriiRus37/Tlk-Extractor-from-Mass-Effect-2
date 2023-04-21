@@ -1,6 +1,6 @@
 import os
 
-import bit_array
+from bit_array import BitArray
 import bit_convertor
 from huffman_node import HuffmanNode
 import tlk_header
@@ -16,7 +16,7 @@ class TlkFile:
         self.header = None
         self.string_refs = []
         self.character_tree = []
-        self.bits = bit_array.BitArray()
+        self.bits = BitArray()
 
     def get_string(self, bit_offset_wrap):
         root_node = self.character_tree[0]
@@ -72,7 +72,7 @@ class TlkFile:
         input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ???
 
         for i in range(self.header.tree_nodes_count):
-            h_node = HuffmanNode(input_s)
+            h_node = HuffmanNode(input_s)  # read 8 bytes: 4 bytes to get left_node_id, 4 bytes to get right_node_id
             self.character_tree.append(h_node)
 
         # / ****************** STEP THREE ****************
@@ -81,7 +81,7 @@ class TlkFile:
         data = [None] * data_length
         input_s.read_to_array(data, 0, data_length)
         # and store it as raw bits for further processing
-        self.bits = bit_array.BitArray(a=data)
+        self.bits = BitArray(a=data)
 
         # rewind BinaryReader just after the Header
         # at the beginning of TLK Entries data

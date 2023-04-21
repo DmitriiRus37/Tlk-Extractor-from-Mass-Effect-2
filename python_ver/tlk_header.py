@@ -10,4 +10,4 @@ class TlkHeader:
         self.entry_1_count = input_stream.read_int_32(in_stream)  # TODO ???
         self.entry_2_count = input_stream.read_int_32(in_stream)  # TODO ???
         self.tree_nodes_count = input_stream.read_int_32(in_stream)  # count of unique symbols
-        self.data_len = input_stream.read_int_32(in_stream)  # TODO bytes, bits or symbols???
+        self.data_len = input_stream.read_int_32(in_stream)  # count of bytes

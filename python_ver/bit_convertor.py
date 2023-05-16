@@ -29,7 +29,7 @@ def get_bytes_by_int_32(int_val: int) -> list:
     byte_2 = int(b[8:16], 2)
     byte_3 = int(b[16:24], 2)
     byte_4 = int(b[24:], 2)
-    return [byte_4, byte_3, byte_2, byte_1]
+    return [byte_1, byte_2, byte_3, byte_4]
 
 
 def reverse_list(bytes_list):
@@ -40,7 +40,7 @@ def reverse_list(bytes_list):
 def to_char_rev(bytes_list: list, index: int) -> str:
     if len(bytes_list) < 2:
         raise Exception('The length of the byte array must be at least 2 bytes long.')
-    reverse_list(bytes_list)
+    # reverse_list(bytes_list)
 
     buffer = [str()] * (len(bytes_list) // 2)
     for i in range(len(buffer)):

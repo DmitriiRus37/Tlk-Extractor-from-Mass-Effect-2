@@ -1,5 +1,6 @@
 class InputStream:
     def __init__(self, *args):
+        self.pos = None  # pos in bytes
         if len(args) == 1:
             with open(args[0], "rb") as f:
                 bytes_read = f.read()

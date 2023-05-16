@@ -5,7 +5,7 @@ import bit_convertor
 from huffman_node import HuffmanNode
 import tlk_header
 from input_stream import InputStream
-import tlk_string_ref
+from tlk_string_ref import TlkStringRef
 from wrapper import Wrapper
 
 from xml.etree import ElementTree as ET
@@ -21,7 +21,9 @@ Structure of TLK file of Mass Effect 2:
     e) entry_2_count
     f) tree_nodes_count
     g) data_len
-2. 
+2. Entries (entry_1 and entry_2; 8 bytes per entry)
+3. Huffman nodes
+4. Other sequences
 '''
 
 
@@ -97,10 +99,6 @@ class TlkFile:
         # and store it as raw bits for further processing
         self.bits = BitArray(a=data)
 
-        # rewind BinaryReader just after the Header
-        # at the beginning of TLK Entries data
-        input_s.pos = pos
-
         # ****************** STEP FOUR ****************
         # -- decode (basing on Huffman Tree) raw bits data into actual strings --
         # and store them in a Dictionary <int,string> where:
@@ -116,6 +114,10 @@ class TlkFile:
             s = self.get_string(offset)
             raw_str[key] = s
 
+        # rewind BinaryReader just after the Header
+        # at the beginning of TLK Entries data
+        input_s.pos = pos
+
         # **************** STEP FIVE ****************
         # -- bind data to String IDs --
         # go through Entries in TLK file and read it's String ID and offset
@@ -123,18 +125,18 @@ class TlkFile:
         # Sometimes there's no such key, in that case, our String ID is probably a substring
         # of another String present in rawStrings.
         for i in range(self.header.entry_1_count + self.header.entry_2_count):
-            s_ref = tlk_string_ref.TlkStringRef(input_s)
-            s_ref.position = i
+            s_ref = TlkStringRef(input_s)  # read 8 bytes
+            s_ref.position = i  # position is an entry
             if s_ref.bit_offset >= 0:
                 # actually, it should store the fullString and subStringOffset,
                 # but as we don't have to use this compression feature,
                 # we will store only the part of String we need
 
-                # key = rawStrings.Keys.Last(c => c < sRef.BitOffset);
+                # key = raw_str.keys.Last(c => c < s_ref.bit_offset);
                 # String fullString = raw_str[key];
                 # int subStringOffset = fullString.LastIndexOf(partString);
                 # s_ref.StartOfString = subStringOffset;
-                # s_ref.Data = fullString;
+                # s_ref.data = fullString;
                 s_ref.data = raw_str[s_ref.bit_offset] \
                     if s_ref.bit_offset in raw_str.keys() \
                     else self.get_string(Wrapper(s_ref.bit_offset))

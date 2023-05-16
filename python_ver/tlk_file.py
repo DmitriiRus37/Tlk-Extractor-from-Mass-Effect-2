@@ -10,7 +10,6 @@ from wrapper import Wrapper
 
 from xml.etree import ElementTree as ET
 
-
 '''
 Structure of TLK file of Mass Effect 2:
 1. Header
@@ -21,8 +20,12 @@ Structure of TLK file of Mass Effect 2:
     e) entry_2_count
     f) tree_nodes_count
     g) data_len
-2. Entries (entry_1 and entry_2; 8 bytes per entry)
-3. Huffman nodes
+2. Entries 
+    entry_1 and entry_2; 
+    8 bytes per entry: 
+        4 bytes - string_id, 
+        4 bytes - bit_offset
+3. Huffman nodes ()
 4. Other sequences
 '''
 
@@ -34,12 +37,12 @@ class TlkFile:
         self.character_tree = []
         self.bits = BitArray()
 
-    def get_string(self, bit_offset_wrap: Wrapper):
+    def get_string(self, bit_offset: Wrapper) -> str:
         root_node = self.character_tree[0]
         cur_node = root_node
         cur_string = ''
 
-        offset = bit_offset_wrap.val
+        offset = bit_offset.val
         while offset < self.bits.length:
             next_node_id = cur_node.right_node_id if self.bits.get_rev(offset) else cur_node.left_node_id
 
@@ -55,11 +58,11 @@ class TlkFile:
                     cur_node = root_node
                 else:
                     offset += 1
-                    bit_offset_wrap.val = offset
+                    bit_offset.val = offset
                     return cur_string
             offset += 1
         offset += 1
-        bit_offset_wrap.val = offset
+        bit_offset.val = offset
         return None
 
     # Loads a TLK file into memory.
@@ -84,6 +87,7 @@ class TlkFile:
 
         # jumping to the beginning of Huffmann Tree stored in TLK file * /
         pos = input_s.pos  # position after reading of header
+        # an entry is: 4 bytes - string_id and 4 bytes - bit_offset
         input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ??? WHAT IS ENTRY
 
         for _ in range(self.header.tree_nodes_count):
@@ -137,9 +141,10 @@ class TlkFile:
                 # int subStringOffset = fullString.LastIndexOf(partString);
                 # s_ref.StartOfString = subStringOffset;
                 # s_ref.data = fullString;
-                s_ref.data = raw_str[s_ref.bit_offset] \
-                    if s_ref.bit_offset in raw_str.keys() \
-                    else self.get_string(Wrapper(s_ref.bit_offset))
+                if s_ref.bit_offset in raw_str.keys():
+                    s_ref.data = raw_str[s_ref.bit_offset]
+                else:
+                    s_ref.data = self.get_string(Wrapper(s_ref.bit_offset))
             self.string_refs.append(s_ref)
 
     def store_to_file(self, dest_file: str, file_format: str):

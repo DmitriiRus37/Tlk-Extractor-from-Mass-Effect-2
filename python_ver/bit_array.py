@@ -38,24 +38,24 @@ class BitArray:
             self.repn = a[0:rep_length]
             if rep_length > 0:
                 self.repn[rep_length - 1] &= bit_mask
-        elif 'length' in kwargs:
-            # Creates a bit_array of the specified size, initialized to zeros.
-            length = kwargs['length']
-            if length < 0:
-                raise Exception('Negative length for BitArray')
-            self.length = length
-            self.repn = []
-        elif 'bits' in kwargs:
-            # Create a bit_array whose bits are those of the given array of Booleans.
-            bits = kwargs['bits']
-            self.length = len(bits)
-            self.repn = [0] * ((self.length + 7) // 8)
-            [self.set_bit(i, bits[i]) for i in range(self.length)]
-        elif 'ba' in kwargs:
-            # Copy constructor (for cloning).
-            ba = kwargs['ba']
-            self.length = len(ba)
-            self.repn = ba.repn.clone()
+        # elif 'length' in kwargs:
+        #     # Creates a bit_array of the specified size, initialized to zeros.
+        #     length = kwargs['length']
+        #     if length < 0:
+        #         raise Exception('Negative length for BitArray')
+        #     self.length = length
+        #     self.repn = []
+        # elif 'bits' in kwargs:
+        #     # Create a bit_array whose bits are those of the given array of Booleans.
+        #     bits = kwargs['bits']
+        #     self.length = len(bits)
+        #     self.repn = [0] * ((self.length + 7) // 8)
+        #     [self.set_bit(i, bits[i]) for i in range(self.length)]
+        # elif 'ba' in kwargs:
+        #     # Copy constructor (for cloning).
+        #     ba = kwargs['ba']
+        #     self.length = len(ba)
+        #     self.repn = ba.repn.clone()
 
     def get_bit(self, index) -> bool:
         if index < 0 or index >= self.length:

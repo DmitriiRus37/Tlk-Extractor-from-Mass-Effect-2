@@ -17,14 +17,6 @@ def get_bit(byte_impl, index, endian) -> bool:
 
 
 class BitArray:
-    def get_bit(self, index):
-        if index < 0 or index >= self.length:
-            raise Exception('index < 0 or index >= self.length')
-        bit_array = []
-        for i in range(8):
-            bit_array[8 - 1 - i] = self.repn[subscript(index)] >> i & 0x1 != 0x0
-        return get_bit(bit_array, index, 'little_endian')
-
     def __init__(self, **kwargs):
         self.length = None
         self.repn = None
@@ -58,13 +50,20 @@ class BitArray:
             bits = kwargs['bits']
             self.length = len(bits)
             self.repn = [0] * ((self.length + 7) // 8)
-            for i in range(self.length):
-                self.set_bit(i, bits[i])
+            [self.set_bit(i, bits[i]) for i in range(self.length)]
         elif 'ba' in kwargs:
             # Copy constructor (for cloning).
             ba = kwargs['ba']
             self.length = len(ba)
             self.repn = ba.repn.clone()
+
+    def get_bit(self, index) -> bool:
+        if index < 0 or index >= self.length:
+            raise Exception('index < 0 or index >= self.length')
+        bit_array = []
+        for i in range(8):
+            bit_array[8 - 1 - i] = self.repn[subscript(index)] >> i & 0x1 != 0x0
+        return get_bit(bit_array, index, 'little_endian')
 
     # Returns the reversed indexed bit in this bit_array.
     def get_rev(self, index) -> bool:
@@ -76,7 +75,7 @@ class BitArray:
         return get_bit(bit_array, index, 'little_endian')
 
     # Sets the indexed bit in this bit_array.
-    def set_bit(self, index: int, value):
+    def set_bit(self, index: int, value) -> None:
         if index < 0 or index >= self.length:
             raise Exception('index < 0 or index >= self.length')
         idx = subscript(index)

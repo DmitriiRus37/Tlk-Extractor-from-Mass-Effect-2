@@ -1,30 +1,30 @@
 # A packed array of booleans.
 # @author kiwimoosical
 # @link https://www.se7ensins.com/forums/threads/java-c-s-bitconverter-in-java.486271/
-def to_int_32(bytes: list, index: int):
-    if len(bytes) != 4:
+def to_int_32(bytes_list: list, index: int):
+    if len(bytes_list) != 4:
         raise Exception('The length of the byte array must be at least 4 bytes long.')
-    return (0xff & bytes[index]) << 24 | \
-        (0xff & bytes[index + 1]) << 16 | \
-        (0xff & bytes[index + 2]) << 8 | \
-        (0xff & bytes[index + 3])
+    return (0xff & bytes_list[index]) << 24 | \
+        (0xff & bytes_list[index + 1]) << 16 | \
+        (0xff & bytes_list[index + 2]) << 8 | \
+        (0xff & bytes_list[index + 3])
 
 
-def to_int_64(bytes: list, index: int):
-    if len(bytes) != 4:
+def to_int_64(bytes_list: list, index: int):
+    if len(bytes_list) != 4:
         raise Exception('The length of the byte array must be at least 8 bytes long.')
-    return (0xff & bytes[index]) << 56 | \
-        (0xff & bytes[index + 1]) << 48 | \
-        (0xff & bytes[index + 2]) << 40 | \
-        (0xff & bytes[index + 3]) << 32 | \
-        (0xff & bytes[index + 4]) << 24 | \
-        (0xff & bytes[index + 5]) << 16 | \
-        (0xff & bytes[index + 6]) << 8 | \
-        (0xff & bytes[index + 7])
+    return (0xff & bytes_list[index]) << 56 | \
+        (0xff & bytes_list[index + 1]) << 48 | \
+        (0xff & bytes_list[index + 2]) << 40 | \
+        (0xff & bytes_list[index + 3]) << 32 | \
+        (0xff & bytes_list[index + 4]) << 24 | \
+        (0xff & bytes_list[index + 5]) << 16 | \
+        (0xff & bytes_list[index + 6]) << 8 | \
+        (0xff & bytes_list[index + 7])
 
 
-def get_bytes_by_value(value: int) -> list:
-    b = format(value, '32b').replace(' ', '0')
+def get_bytes_by_int_32(int_val: int) -> list:
+    b = format(int_val, '32b').replace(' ', '0')
     byte_1 = int(b[:8], 2)
     byte_2 = int(b[8:16], 2)
     byte_3 = int(b[16:24], 2)

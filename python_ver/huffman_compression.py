@@ -2,8 +2,10 @@ import os
 from xml.etree import ElementTree as ET
 
 from collections import deque
+from typing import Any
 
-bits_per_byte = 8
+from helpers import bit_array_list_to_byte_array, compare_version_strings
+from huffman_node import HuffmanNode
 
 
 class HuffmanCompression:
@@ -15,7 +17,7 @@ class HuffmanCompression:
         self.huffman_codes = {}
 
     # Converts a Huffman Tree to it's binary representation used by TLK format of Mass Effect 2.
-    def convert_huffman_tree_to_buffer(self):
+    def convert_huffman_tree_to_buffer(self) -> list[Any]:
         q = deque()
         indices = {}
 
@@ -46,7 +48,7 @@ class HuffmanCompression:
 
     # Dumps data from memory to TLK compressed file format.
     # Compressed data should be read into memory first, by LoadInputData method.
-    def save_to_tlk_file(self, dest_file: str):
+    def save_to_tlk_file(self, dest_file: str) -> None:
         if os.path.isfile(dest_file):
             os.remove(dest_file)
         # converts Huffmann Tree to binary form
@@ -112,41 +114,8 @@ class HuffmanCompression:
                 f.write(el)
 
             # writing data
-            data = self.BitArrayListToByteArray(binary_data, offset)
+            data = bit_array_list_to_byte_array(binary_data, offset)
             f.write(data)
-
-    def BitArrayListToByteArray(self, bits_list, bits_count):
-        byte_size = bits_count // bits_per_byte
-
-        if bits_count % bits_per_byte > 0:
-            byte_size += 1
-
-        bytes = [0] * byte_size
-        byte_pos = 0
-        bits_read = 0
-        value = 0
-        significance = 1
-
-        for bits in bits_list:
-            bit_pos = 0
-
-            while bit_pos < len(bits):
-                if bits[bit_pos]:
-                    value += significance
-                bit_pos += 1
-                bits_read += 1
-
-                if bits_read % bits_per_byte == 0:
-                    bytes[byte_pos] = value
-                    byte_pos += 1
-                    value = 0
-                    significance = 0
-                    bits_read = 0
-                else:
-                    significance = significance << 1
-        if bits_read % bits_per_byte != 0:
-            bytes[byte_pos] = value
-        return bytes
 
     # Loads a file into memory and prepares for compressing it to TLK
     def load_input_data(self, file_name: str, ff: str):
@@ -238,7 +207,7 @@ class HuffmanCompression:
                     data += '\0'
 
             # only add debug info if we are in debug mode and StringID is positive AND it's localizable
-            tlk_e = tlk_entry(id, position, data)
+            tlk_e = TlkEntry(id, position, data)
             self.input_data.append(tlk_e)
             # if id >= 0 && debug_version && (id & 0x8000000) != 0x8000000:
             #     tlk_e = tlk_entry(id, position, "(#" + id + ") " + data)
@@ -255,54 +224,8 @@ class HuffmanCompression:
             raise Exception('version < 1.0.3')
 
 
-def compare_version_strings(ver1: str, ver2: str, sign):
-    arr1 = [int(x) for x in ver1.split('.')]
-    arr2 = [int(x) for x in ver2.split('.')]
-    length = max(len(arr1), len(arr2))
-
-    arr1_new = []
-    arr2_new = []
-
-    for i in range(length):
-        arr1_new.append(int(arr1[i]) if len(arr1) > i else 0)
-        arr2_new.append(int(arr2[i]) if len(arr2) > i else 0)
-
-    if sign == '<':
-        for i in range(length):
-            if arr1_new[i] > arr2_new[i]:
-                return False
-            elif arr1_new[i] < arr2_new[i]:
-                return True
-    elif sign == '>':
-        for i in range(length):
-            if arr1_new[i] > arr2_new[i]:
-                return True
-            elif arr1_new[i] < arr2_new[i]:
-                return False
-    elif sign == '=':
-        for i in range(length):
-            if arr1_new[i] > arr2_new[i] or arr1_new[i] < arr2_new[i]:
-                return False
-            return True
-    raise Exception("Set valid sign( '<' '>' '=' )")
-
-
-class tlk_entry:
-    def __init__(self, id, pos, data):
+class TlkEntry:
+    def __init__(self, id: int, pos: int, data: str):
         self.string_id = id
         self.position = pos
         self.data = data
-
-
-class HuffmanNode:
-    def __init__(self, **kwargs):
-        id = None
-        if 'd' in kwargs and 'freq' in kwargs:
-            self.letter = kwargs['d']
-            self.frequency_count = kwargs['freq']
-            self.left = None
-            self.right = None
-        elif 'left' in kwargs and 'right' in kwargs:
-            self.left = kwargs['left']
-            self.right = kwargs['right']
-            self.frequency_count = self.left.frequency_count + self.right.frequency_count

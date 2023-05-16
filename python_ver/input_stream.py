@@ -11,7 +11,7 @@ class InputStream:
                 self.bytes = tuple(bytes_read)
             self.pos = args[0]
 
-    def read_to_array(self, arr, offset, length):
+    def read_to_array(self, arr: list, offset: int, length: int):
         if length > len(arr) - offset:
             raise Exception('length > len(b) - offset')
         elif length == 0:

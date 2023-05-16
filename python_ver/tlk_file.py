@@ -6,7 +6,7 @@ from huffman_node import HuffmanNode
 import tlk_header
 from input_stream import InputStream
 import tlk_string_ref
-import offset_wrap
+from wrapper import Wrapper
 
 from xml.etree import ElementTree as ET
 
@@ -32,32 +32,32 @@ class TlkFile:
         self.character_tree = []
         self.bits = BitArray()
 
-    def get_string(self, bit_offset_wrap):
+    def get_string(self, bit_offset_wrap: Wrapper):
         root_node = self.character_tree[0]
         cur_node = root_node
         cur_string = ''
 
-        i = bit_offset_wrap.value
-        while i < self.bits.length:
-            next_node_id = cur_node.right_node_id if self.bits.get_rev(i) else cur_node.left_node_id
+        offset = bit_offset_wrap.val
+        while offset < self.bits.length:
+            next_node_id = cur_node.right_node_id if self.bits.get_rev(offset) else cur_node.left_node_id
 
             if next_node_id >= 0:
                 cur_node = self.character_tree[next_node_id]
             else:
                 try:
-                    char = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_value(0xffff - next_node_id), 0)
+                    char = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_int_32(0xffff - next_node_id), 0)
                 except:
                     raise Exception
                 if char != '\0':
                     cur_string += char
                     cur_node = root_node
                 else:
-                    i += 1
-                    bit_offset_wrap.value = i
+                    offset += 1
+                    bit_offset_wrap.val = offset
                     return cur_string
-            i += 1
-        i += 1
-        bit_offset_wrap.value = i
+            offset += 1
+        offset += 1
+        bit_offset_wrap.val = offset
         return None
 
     # Loads a TLK file into memory.
@@ -82,10 +82,11 @@ class TlkFile:
 
         # jumping to the beginning of Huffmann Tree stored in TLK file * /
         pos = input_s.pos  # position after reading of header
-        input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ???
+        input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ??? WHAT IS ENTRY
 
         for _ in range(self.header.tree_nodes_count):
-            h_node = HuffmanNode(input_s)  # read 8 bytes: 4 bytes to get left_node_id, 4 bytes to get right_node_id
+            # read 8 bytes: 4 bytes to get left_node_id, 4 bytes to get right_node_id
+            h_node = HuffmanNode(stream=input_s)
             self.character_tree.append(h_node)
 
         # / ****************** STEP THREE ****************
@@ -108,10 +109,10 @@ class TlkFile:
         # so offset == 0 means the first bit in Bits array
         # string: actual decoded String
         raw_str = {}
-        offset = offset_wrap.OffsetWrap(0)  # just a wrapper of bits offset
+        offset = Wrapper(0)  # wrapper of bits offset
 
-        while offset.value < self.bits.length:
-            key = offset.value
+        while offset.val < self.bits.length:
+            key = offset.val
             s = self.get_string(offset)
             raw_str[key] = s
 
@@ -136,7 +137,7 @@ class TlkFile:
                 # s_ref.Data = fullString;
                 s_ref.data = raw_str[s_ref.bit_offset] \
                     if s_ref.bit_offset in raw_str.keys() \
-                    else self.get_string(offset_wrap.OffsetWrap(s_ref.bit_offset))
+                    else self.get_string(Wrapper(s_ref.bit_offset))
             self.string_refs.append(s_ref)
 
     def store_to_file(self, dest_file: str, file_format: str):
@@ -150,7 +151,7 @@ class TlkFile:
             self.save_to_text_file(dest_file)
 
     # Writing data in an XML format.
-    def save_to_xml_file(self, abs_path):
+    def save_to_xml_file(self, abs_path: str):
         root = ET.Element('tlkFile')  # <tlkFile> tag
         root.set("TLKToolVersion", '1.0.4')  # <tlkFile> attributes
         comment = ET.Comment('Male entries section begin (ends at position {0})'.format(
@@ -184,7 +185,7 @@ class TlkFile:
         ET.indent(tree, space="\t", level=0)
         tree.write(abs_path, encoding="utf-8")
 
-    def save_to_text_file(self, dest_file):
+    def save_to_text_file(self, dest_file: str):
         total_count = len(self.string_refs)
 
         with open(dest_file, "w+") as f:

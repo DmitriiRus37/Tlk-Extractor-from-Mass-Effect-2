@@ -17,7 +17,7 @@ class InputStream:
         elif length == 0:
             return 0
 
-        c = read_byte(self)
+        c = self.read_byte()
         if c == -1:
             return -1
         arr[offset] = c
@@ -25,7 +25,7 @@ class InputStream:
         counter = 1
         try:
             for i in range(1, length):
-                c = read_byte(self)
+                c = self.read_byte()
                 if c == -1:
                     break
                 arr[offset + i] = c
@@ -35,17 +35,17 @@ class InputStream:
         return counter
 
 
-def read_int_32(input_s):
-    ch1 = read_byte(input_s)
-    ch2 = read_byte(input_s)
-    ch3 = read_byte(input_s)
-    ch4 = read_byte(input_s)
-    if (ch1 | ch2 | ch3 | ch4) < 0:
-        raise Exception('(ch1 | ch2 | ch3 | ch4) < 0')
-    return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + ch1
+    def read_int_32(self):
+        ch1 = self.read_byte()
+        ch2 = self.read_byte()
+        ch3 = self.read_byte()
+        ch4 = self.read_byte()
+        if (ch1 | ch2 | ch3 | ch4) < 0:
+            raise Exception('(ch1 | ch2 | ch3 | ch4) < 0')
+        return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + ch1
 
 
-def read_byte(input_s):
-    ch = input_s.bytes[input_s.pos]
-    input_s.pos = input_s.pos + 1
-    return ch
+    def read_byte(self):
+        ch = self.bytes[self.pos]
+        self.pos = self.pos + 1
+        return ch

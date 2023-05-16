@@ -8,12 +8,13 @@ def position_big_endian(idx):
     return 1 << (bits_per_unit - 1 - (idx % bits_per_unit))
 
 
-def subscript(idx) -> int:
+def get_byte_from_bit_index(idx) -> int:
     return idx // bits_per_unit
 
 
-def get_bit(byte_impl, index, endian) -> bool:
-    return byte_impl[index % bits_per_unit] if endian == 'big_endian' else byte_impl[8 - 1 - index % bits_per_unit]
+def get_bit(bit_arr: str, index: int, endian: str) -> bool:
+    bit_arr_index = index % bits_per_unit
+    return bool(int(bit_arr[bit_arr_index])) if endian == 'big_endian' else bool(int(bit_arr[8 - 1 - bit_arr_index]))
 
 
 class BitArray:
@@ -57,27 +58,26 @@ class BitArray:
         #     self.length = len(ba)
         #     self.repn = ba.repn.clone()
 
-    def get_bit(self, index) -> bool:
-        if index < 0 or index >= self.length:
-            raise Exception('index < 0 or index >= self.length')
-        bit_array = []
-        for i in range(8):
-            bit_array[8 - 1 - i] = self.repn[subscript(index)] >> i & 0x1 != 0x0
-        return get_bit(bit_array, index, 'little_endian')
+    # def get_bit(self, index) -> bool:
+    #     if index < 0 or index >= self.length:
+    #         raise Exception('index < 0 or index >= self.length')
+    #     bit_array = []
+    #     for i in range(8):
+    #         bit_array[8 - 1 - i] = self.repn[subscript(index)] >> i & 0x1 != 0x0
+    #     return get_bit(bit_array, index, 'little_endian')
 
-    # Returns the reversed indexed bit in this bit_array.
-    def get_rev(self, index) -> bool:
+    # Returns the reversed indexed bit in this bit_array by index.
+    def get_reversed_bit(self, index) -> bool:
         if index < 0 or index >= self.length:
             raise Exception('index < 0 or index >= self.length')
-        bit_array = [False] * 8
-        for i in range(8):
-            bit_array[8 - 1 - i] = (self.repn[subscript(index)] >> i & 0x1) != 0x0
-        return get_bit(bit_array, index, 'little_endian')
+        required_byte = self.repn[get_byte_from_bit_index(index)]
+        req_byte_str = '{0:08b}'.format(required_byte)
+        return get_bit(req_byte_str, index, 'little_endian')
 
     # Sets the indexed bit in this bit_array.
-    def set_bit(self, index: int, value) -> None:
-        if index < 0 or index >= self.length:
-            raise Exception('index < 0 or index >= self.length')
-        idx = subscript(index)
-        bit = position_big_endian(index)
-        self.repn[idx] = self.repn[idx] | bit if value else self.repn[idx] & ~bit
+    # def set_bit(self, index: int, value) -> None:
+    #     if index < 0 or index >= self.length:
+    #         raise Exception('index < 0 or index >= self.length')
+    #     idx = get_byte_from_bit_index(index)
+    #     bit = position_big_endian(index)
+    #     self.repn[idx] = self.repn[idx] | bit if value else self.repn[idx] & ~bit

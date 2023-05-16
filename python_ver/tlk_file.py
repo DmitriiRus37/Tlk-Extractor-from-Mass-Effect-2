@@ -44,7 +44,10 @@ class TlkFile:
 
         offset = bit_offset.val
         while offset < self.bits.length:
-            next_node_id = cur_node.right_node_id if self.bits.get_rev(offset) else cur_node.left_node_id
+            if self.bits.get_reversed_bit(offset):
+                next_node_id = cur_node.right_node_id
+            else:
+                next_node_id = cur_node.left_node_id
 
             if next_node_id >= 0:
                 cur_node = self.character_tree[next_node_id]

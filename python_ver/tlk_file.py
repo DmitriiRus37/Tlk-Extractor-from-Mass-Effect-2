@@ -11,6 +11,20 @@ import offset_wrap
 from xml.etree import ElementTree as ET
 
 
+'''
+Structure of TLK file of Mass Effect 2:
+1. Header
+    a) magic
+    b) ver
+    c) min_ver
+    d) entry_1_count
+    e) entry_2_count
+    f) tree_nodes_count
+    g) data_len
+2. 
+'''
+
+
 class TlkFile:
     def __init__(self):
         self.header = None
@@ -30,7 +44,6 @@ class TlkFile:
             if next_node_id >= 0:
                 cur_node = self.character_tree[next_node_id]
             else:
-                char = chr(0)
                 try:
                     char = bit_convertor.to_char_rev(bit_convertor.get_bytes_by_value(0xffff - next_node_id), 0)
                 except:
@@ -55,7 +68,7 @@ class TlkFile:
 
         # using LittleEndian for PC architecture and BigEndian for Xbox360
         input_s = InputStream(source_path)
-        self.header = tlk_header.TlkHeader(input_s)
+        self.header = tlk_header.TlkHeader(input_s)  # read 7 * 4 = 28 bytes
 
         # read possibly correct ME2 TLK file, but from another platfrom
         if self.header.magic == 1416391424:
@@ -71,13 +84,13 @@ class TlkFile:
         pos = input_s.pos  # position after reading of header
         input_s.pos = pos + (self.header.entry_1_count + self.header.entry_2_count) * 8  # TODO ???
 
-        for i in range(self.header.tree_nodes_count):
+        for _ in range(self.header.tree_nodes_count):
             h_node = HuffmanNode(input_s)  # read 8 bytes: 4 bytes to get left_node_id, 4 bytes to get right_node_id
             self.character_tree.append(h_node)
 
         # / ****************** STEP THREE ****************
         # -- read all of coded data into memory --
-        data_length = self.header.data_len  # number of bytes
+        data_length = self.header.data_len  # number of bytes of encoded sequence
         data = [None] * data_length
         input_s.read_to_array(data, 0, data_length)
         # and store it as raw bits for further processing

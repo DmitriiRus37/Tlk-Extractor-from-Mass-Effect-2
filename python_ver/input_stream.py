@@ -12,10 +12,8 @@ class InputStream:
             self.pos = args[0]
 
     def read_to_array(self, arr, offset, length):
-        if arr is None:
-            raise Exception('b == None')
-        elif offset < 0 or length < 0 or length > len(arr) - offset:
-            raise Exception('offset < 0 or len < 0 or len > len(b) - offset')
+        if length > len(arr) - offset:
+            raise Exception('length > len(b) - offset')
         elif length == 0:
             return 0
 

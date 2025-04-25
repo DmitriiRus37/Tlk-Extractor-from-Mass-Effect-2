@@ -1,6 +1,5 @@
 package ru;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
@@ -19,7 +18,7 @@ import java.io.IOException;
 
 @NoArgsConstructor
 @Getter @Setter
-public class FxmlControllerTlkToXml {
+public class FxmlController {
 
     public File inputTlkFile;
     public File outputXmlFile;
@@ -35,6 +34,9 @@ public class FxmlControllerTlkToXml {
     private TextField textFieldInputPathTlkToXml;
     @FXML
     private TextField textFieldIOutputPathTlkToXml;
+
+    @FXML
+    private TextField statusTlkToXml;
     @FXML
     private TextField textFieldStatusTlkToXml;
     @FXML
@@ -42,31 +44,37 @@ public class FxmlControllerTlkToXml {
     boolean textFieldOutputChosenTlkToXml = false;
 
     @FXML
-    private void selectInputTlkFile(ActionEvent event) {
+    private void selectInputTlkFile() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TLK files", "*.tlk"));
         File f = fc.showOpenDialog(app.getPrimaryStage());
-        textFieldInputPathTlkToXml.setText(f.getAbsolutePath());
-        if (!textFieldOutputChosenTlkToXml) {
-            textFieldIOutputPathTlkToXml.setText(FilenameUtils.removeExtension(f.getAbsolutePath())+".xml");
+        if (f != null) {
+            textFieldInputPathTlkToXml.setText(f.getAbsolutePath());
+            if (!textFieldOutputChosenTlkToXml) {
+                textFieldIOutputPathTlkToXml.setText(FilenameUtils.removeExtension(f.getAbsolutePath())+".xml");
+            }
         }
     }
 
     @FXML
-    private void selectOutputXmlFile(ActionEvent event) {
+    private void selectOutputXmlFile() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
         File f = fc.showOpenDialog(null);
-        textFieldIOutputPathTlkToXml.setText(f.getAbsolutePath());
-        textFieldOutputChosenTlkToXml = true;
+        if (f!=null) {
+            textFieldIOutputPathTlkToXml.setText(f.getAbsolutePath());
+            textFieldOutputChosenTlkToXml = true;
+        }
     }
 
     @FXML
-    private void startExportTlkToXml(ActionEvent event) throws IOException, XMLStreamException {
+    private void startExportTlkToXml() throws IOException, XMLStreamException {
+        statusTlkToXml.setText("in progress");
         progressBarTlkToXml.setProgress(0.0);
         TlkFile tf = new TlkFile();
         tf.loadTlkData(textFieldInputPathTlkToXml.getText(), true);
         tf.storeToFile(textFieldIOutputPathTlkToXml.getText(), FileFormat.XML, this);
+        statusTlkToXml.setText("DONE");
     }
 
     public File inputXmlFile;
@@ -84,12 +92,15 @@ public class FxmlControllerTlkToXml {
     private TextField textFieldIOutputPathXmlToTlk;
     @FXML
     private TextField textFieldStatusXmlToTlk;
+
+    @FXML
+    private TextField statusXmlToTlk;
     @FXML
     public ProgressBar progressBarXmlToTlk;
     boolean textFieldOutputChosenXmlToTlk = false;
 
     @FXML
-    private void selectInputXmlFile(ActionEvent event) {
+    private void selectInputXmlFile() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML files", "*.xml"));
         File f = fc.showOpenDialog(app.getPrimaryStage());
@@ -100,7 +111,7 @@ public class FxmlControllerTlkToXml {
     }
 
     @FXML
-    private void selectOutputTlkFile(ActionEvent event) {
+    private void selectOutputTlkFile() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TLK files", "*.tlk"));
         File f = fc.showOpenDialog(null);
@@ -109,11 +120,13 @@ public class FxmlControllerTlkToXml {
     }
 
     @FXML
-    private void startExportXmlToTlk(ActionEvent event) throws IOException, ParserConfigurationException, SAXException {
+    private void startExportXmlToTlk() throws IOException, ParserConfigurationException, SAXException {
+        statusXmlToTlk.setText("in progress");
         progressBarXmlToTlk.setProgress(0.0);
         HuffmanCompression hc = new HuffmanCompression();
         hc.loadInputData(textFieldInputPathXmlToTlk.getText(), FileFormat.XML, true);
         hc.saveToTlkFile(textFieldIOutputPathXmlToTlk.getText(), true);
+        statusXmlToTlk.setText("DONE");
     }
 
 }

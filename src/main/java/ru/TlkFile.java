@@ -13,11 +13,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TlkFile  {
+
     private TlkHeader header;
     private List<TlkStringRef> stringRefs;
     private List<HuffmanNode> characterTree;
@@ -37,6 +40,7 @@ public class TlkFile  {
      * <param name="fileName"></param>
      */
     public void loadTlkData(String fileName, boolean isPC) throws IOException {
+        long start = System.nanoTime();
         /** **************** STEP ONE ****************
          *          -- load TLK file header --
          *        reading first 28 (4 * 7) bytes
@@ -106,26 +110,27 @@ public class TlkFile  {
          */
         stringRefs = new LinkedList<>();
         for (int i = 0; i < header.entry1Count + header.entry2Count; i++) {
-            TlkStringRef sref = new TlkStringRef(r);
-            sref.position = i;
-            if (sref.bitOffset >= 0) {
+            TlkStringRef sRef = new TlkStringRef(r);
+            sRef.position = i;
+            if (sRef.bitOffset >= 0) {
                 /** actually, it should store the fullString and subStringOffset,
                  * but as we don't have to use this compression feature,
                  * we will store only the part of String we need
                  * */
-                /** int key = rawStrings.Keys.Last(c => c < sref.BitOffset);
+                /** int key = rawStrings.Keys.Last(c => c < sRef.BitOffset);
                  * String fullString = rawStrings[key];
                  * int subStringOffset = fullString.LastIndexOf(partString);
-                 * sref.StartOfString = subStringOffset;
-                 * sref.Data = fullString;
+                 * sRef.StartOfString = subStringOffset;
+                 * sRef.Data = fullString;
                  */
-                sref.data = rawStrings.containsKey(sref.bitOffset) ?
-                        rawStrings.get(sref.bitOffset) :
-                        GetString(new Wrap(sref.bitOffset));
+                sRef.data = rawStrings.containsKey(sRef.bitOffset) ?
+                        rawStrings.get(sRef.bitOffset) :
+                        GetString(new Wrap(sRef.bitOffset));
             }
-            stringRefs.add(sref);
+            stringRefs.add(sRef);
         }
         r.close();
+        System.out.println("loadTlkData: "+ (System.nanoTime() - start)/1_000_000);
     }
 
     /** <summary>
@@ -134,18 +139,21 @@ public class TlkFile  {
      *  <param name="fileName"></param>
      *  <param name="ff"></param>
      */
-    public void dumpToFile(String fileName, FileFormat ff) throws XMLStreamException, IOException, TransformerConfigurationException {
+    public void storeToFile(String fileName, FileFormat ff, FxmlControllerTlkToXml controller) throws XMLStreamException, IOException {
 
+        long start = System.nanoTime();
         Files.deleteIfExists(Paths.get(fileName));
         /** for now, it's better not to sort, to preserve original order */
         // StringRefs.Sort(CompareTlkStringRef);
 
         if (ff.equals(FileFormat.XML)) {
-            saveToXmlFile(fileName);
+            saveToXmlFile(fileName, controller);
             prettyXmlFile(fileName);
         } else {
-            saveToTextFile(fileName);
+            saveToTextFile(fileName, controller);
         }
+
+        System.out.println("storeToFile: "+ (System.nanoTime() - start)/1_000_000);
     }
 
     /** <summary>
@@ -205,8 +213,8 @@ public class TlkFile  {
      *  </summary>
      * <param name="fileName"></param>
      * */
-    private void saveToXmlFile(String fileName)
-            throws XMLStreamException, IOException {
+    private void saveToXmlFile(String fileName, FxmlControllerTlkToXml controller) throws XMLStreamException, IOException {
+        int totalCount = stringRefs.size();
 
         // Creating FileWriter object
         Writer fileWriter = new FileWriter(fileName);
@@ -219,10 +227,11 @@ public class TlkFile  {
 
         xr.writeStartDocument("utf-8", "1.0");
         xr.writeStartElement("tlkFile");
-        xr.writeAttribute("TLKToolVersion", "how to get version???");
+        xr.writeAttribute("TLKToolVersion", "1.0.4");
         xr.writeComment("Male entries section begin (ends at position " + (header.entry1Count - 1) + ")");
 
-        for (TlkStringRef s : stringRefs) {
+        for (int i = 0; i < stringRefs.size(); i++) {
+            TlkStringRef s = stringRefs.get(i);
             if (s.position == header.entry1Count) {
                 xr.writeComment("Male entries section end");
                 xr.writeComment("Female entries section begin (ends at position " + (header.entry1Count + header.entry2Count - 1) + ")");
@@ -271,14 +280,13 @@ public class TlkFile  {
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-//            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, true ? "yes" : "no");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-            PrintWriter writer = new PrintWriter(fileName, StandardCharsets.UTF_8);
+            PrintWriter writer = new PrintWriter(fileName);
             transformer.transform(new DOMSource(document), new StreamResult(writer));
 
         } catch (IOException | IllegalArgumentException |
-                ParserConfigurationException | TransformerException | SAXException e) {
+                 ParserConfigurationException | TransformerException | SAXException e) {
             throw new RuntimeException("Error occurs when pretty-printing xml:\n" + xmlString, e);
         }
     }
@@ -291,23 +299,17 @@ public class TlkFile  {
      * </remarks>
      * <param name="fileName"></param>
      */
-    private void saveToTextFile(String fileName) {
+    private void saveToTextFile(String fileName, FxmlControllerTlkToXml controller) {
         int totalCount = stringRefs.size();
-        int count = 0;
-        int lastProgress = -1;
 
-        for (TlkStringRef s : stringRefs) {
+        for (int i = 0; i < stringRefs.size(); i++) {
+            TlkStringRef s = stringRefs.get(i);
             String line = s.stringId + ": " + s.data + "\r\n";
 
             try (FileWriter fw = new FileWriter(fileName, true)) {
                 fw.write(line);
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-
-            int progress = (++count * 100) / totalCount;
-            if (progress > lastProgress) {
-                lastProgress = progress;
             }
         }
     }
@@ -324,8 +326,8 @@ public class TlkFile  {
     }
 
     public static PositionInputStream baseStreamSeek(long pos, String fileName) throws IOException {
-        PositionInputStream r = new PositionInputStream(new FileInputStream(fileName));
-        r.skipNBytes(pos);
+        PositionInputStream r = new PositionInputStream(Files.newInputStream(Paths.get(fileName)));
+        r.skip(pos);
         return r;
     }
 

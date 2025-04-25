@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 class HuffmanCompression {
@@ -35,7 +35,7 @@ class HuffmanCompression {
 
         @Override
         public int compareTo(Object o) {
-            return Integer.compare(this.position, (Integer)o);
+            return Integer.compare(this.position, ((TlkEntry) o).position);
         }
 
     }
@@ -83,7 +83,7 @@ class HuffmanCompression {
      *  <param name="isPC"></param>
      */
     public void saveToTlkFile(String fileName, boolean isPC) throws IOException {
-        Files.deleteIfExists(Path.of(fileName));
+        Files.deleteIfExists(Paths.get(fileName));
 
         /* converts Huffmann Tree to binary form */
         List<Integer> treeBuffer = ConvertHuffmanTreeToBuffer();
@@ -186,7 +186,7 @@ class HuffmanCompression {
         // Получение списка всех элементов tlkFile внутри корневого элемента (getDocumentElement возвращает ROOT элемент XML файла).
         NodeList tlkFileElements = document.getDocumentElement().getElementsByTagName("tlkFile");
         /* read and store TLK Tool version, which was used to create the XML file */
-        String toolVersion = String.valueOf(document.getAttributes().getNamedItem("TLKToolVersion"));
+        String toolVersion = String.valueOf(document.getDocumentElement().getAttributes().getNamedItem("TLKToolVersion").getNodeValue());
         if (toolVersion != null) {
             inputFileVersion = toolVersion;
         }
@@ -240,39 +240,35 @@ class HuffmanCompression {
             arr2New[i] = arr2.length > i ? Integer.parseInt(arr2[i]) : 0;
         }
 
-        switch (sign) {
-            case "<" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return false;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return true;
-                    }
+        if ("<".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return false;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return true;
                 }
-                return false;
             }
-            case ">" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return true;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return false;
-                    }
+            return false;
+        } else if (">".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return true;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return false;
                 }
-                return false;
             }
-            case "=" -> {
-                for (int i = 0; i < len; i++) {
-                    if (arr1New[i] > arr2New[i]) {
-                        return false;
-                    } else if (arr1New[i] < arr2New[i]) {
-                        return false;
-                    }
+            return false;
+        } else if ("=".equals(sign)) {
+            for (int i = 0; i < len; i++) {
+                if (arr1New[i] > arr2New[i]) {
+                    return false;
+                } else if (arr1New[i] < arr2New[i]) {
+                    return false;
                 }
-                return true;
             }
-            default -> throw new RuntimeException("Set valid sign( '<' '>' '=' )");
+            return true;
         }
+        throw new RuntimeException("Set valid sign( '<' '>' '=' )");
     }
 
     /* maybe will be finished in the future */
